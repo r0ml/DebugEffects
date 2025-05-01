@@ -3,6 +3,7 @@
 
 import SwiftUI
 import UniformTypeIdentifiers
+import AVFoundation
 
 public struct BackgroundableView : View {
   
@@ -22,19 +23,22 @@ public struct BackgroundableView : View {
     // FIXME: use a "empty image" image
     var bg : AnyView = AnyView(EmptyView())
 
-    if let i = background.wrappedValue?.image {
+    if let i = background.wrappedValue?.nsImage {
       bg = AnyView( Image(nsImage: i).resizable().scaledToFit() )
-    } else if let v = background.wrappedValue?.video {
+    } else if let v = background.wrappedValue?.videoStream {
       //        Task { @MainActor in
       if let vv = v as? VideoSupport {
-        let bgx = vv.getThumbnail()
-        bg = AnyView(Image(decorative: bgx, scale: 1)
-          .resizable().scaledToFit())
+        bg = AnyView( MyAsyncImage {
+          let cg = await vv.getThumbnail()
+          let ns = NSImage(cgImage: cg, size: CGSize(width: cg.width, height: cg.height))
+          return ns
+        } ) // Image(decorative: bgx, scale: 1)
+//          .resizable().scaledToFit())
         //        }
       } else if let w = v as? WebcamSupport {
         bg = AnyView(Image(nsImage: NSImage(named: "still_life")!))
       }
-    } else if let c = background.wrappedValue?.color {
+    } else if let c = background.wrappedValue?.bgColor {
       if let g = background.wrappedValue?.view {
         bg = AnyView( g.frame(maxHeight: 66)  )
       }
@@ -58,15 +62,31 @@ public struct BackgroundableView : View {
         if let url = v as? URL,
            let k = NSImage.init(contentsOf: url) {
           
-          let bookmarkData = try? url.bookmarkData(options: [.securityScopeAllowOnlyReadAccess], includingResourceValuesForKeys: nil, relativeTo: nil)
-          Task { @MainActor in
-            UserDefaults.standard.set(bookmarkData, forKey: "background.\(name)")
-            self.background.wrappedValue = BackgroundSpec( k )
+          if let bookmarkData = try? url.bookmarkData(options: [.securityScopeAllowOnlyReadAccess], includingResourceValuesForKeys: nil, relativeTo: nil) {
+            Task { @MainActor in
+              UserDefaults.standard.set(Data([2,0])+bookmarkData, forKey: "background.\(name)")
+              self.background.wrappedValue = BackgroundSpec( k )
+            }
           }
         }
       }
     } else if pp.hasItemConformingToTypeIdentifier(UTType.movie.identifier) {
-      print("movie")
+      pp.loadItem(forTypeIdentifier: UTType.movie.identifier) {
+        (v, err) in
+        if let e = err {
+          print("on drop of movie \(e.localizedDescription)")
+        }
+        if let url = v as? URL {
+          
+          if let bookmarkData = try? url.bookmarkData(options: [.securityScopeAllowOnlyReadAccess], includingResourceValuesForKeys: nil, relativeTo: nil) {
+            Task { @MainActor in
+              let k = VideoSupport(url: url)  //  AVAsset.init(url: url) {
+              UserDefaults.standard.set(Data([3,0])+bookmarkData, forKey: "background.\(name)")
+              self.background.wrappedValue = BackgroundSpec( k )
+            }
+          }
+        }
+      }
     } else {
       return false
     }

@@ -564,7 +564,7 @@ import os
   
   @MainActor func setUpBaseTexture(_ mtl : MTLRenderPassDescriptor, size: CGSize) {
     
-    if let vv = args.background?.video {
+    if let vv = args.background?.videoStream {
       if
         // FIXME: don't need both
         let ii = vv.readBufferAsImage( now() ),
@@ -574,7 +574,7 @@ import os
       }
       
       
-    } else if let sb = args.background?.image {
+    } else if let sb = args.background?.nsImage {
       
       
       if let bt = baseTexture {

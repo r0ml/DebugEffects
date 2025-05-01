@@ -7,8 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		E7C4F5FF2DC00B8400126792 /* SimpleManifest.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7C4F5FD2DC00B8400126792 /* SimpleManifest.swift */; };
-		E7C4F6012DC00BFD00126792 /* Simple.metal in Sources */ = {isa = PBXBuildFile; fileRef = E7C4F6002DC00BFD00126792 /* Simple.metal */; };
 		E7E57C422DA2DE6A006F463E /* DebugEffectsFramework.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E7E57C2D2DA2DE6A006F463E /* DebugEffectsFramework.framework */; };
 		E7E57C432DA2DE6A006F463E /* DebugEffectsFramework.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = E7E57C2D2DA2DE6A006F463E /* DebugEffectsFramework.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
@@ -67,8 +65,6 @@
 		E75DA2142DA2F01C007ECFE6 /* SUIS-Generators.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = "SUIS-Generators.xcodeproj"; sourceTree = "<group>"; };
 		E75DA24C2DA2F01C007ECFE6 /* SUIS-Parameterized.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = "SUIS-Parameterized.xcodeproj"; sourceTree = "<group>"; };
 		E75DA2AA2DA2F01C007ECFE6 /* SUIS-Shapes3D.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = "SUIS-Shapes3D.xcodeproj"; sourceTree = "<group>"; };
-		E7C4F5FD2DC00B8400126792 /* SimpleManifest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimpleManifest.swift; sourceTree = "<group>"; };
-		E7C4F6002DC00BFD00126792 /* Simple.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = Simple.metal; sourceTree = "<group>"; };
 		E7E312752DA2EFC2004B7DAE /* SUIS-Deferred1.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = "SUIS-Deferred1.xcodeproj"; sourceTree = "<group>"; };
 		E7E312A32DA2EFC2004B7DAE /* SUIS-Deferred2.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = "SUIS-Deferred2.xcodeproj"; sourceTree = "<group>"; };
 		E7E312D42DA2EFC2004B7DAE /* SUIS-Deferred3.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = "SUIS-Deferred3.xcodeproj"; sourceTree = "<group>"; };
@@ -88,6 +84,11 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		E744519A2DC2DCB100E4C63C /* Shaders */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Shaders;
+			sourceTree = "<group>";
+		};
 		E7A0A0322DA6E37200F550C7 /* Resources */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = Resources;
@@ -325,15 +326,6 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		E7C4F5FE2DC00B8400126792 /* Shaders */ = {
-			isa = PBXGroup;
-			children = (
-				E7C4F5FD2DC00B8400126792 /* SimpleManifest.swift */,
-				E7C4F6002DC00BFD00126792 /* Simple.metal */,
-			);
-			path = Shaders;
-			sourceTree = "<group>";
-		};
 		E7E312762DA2EFC2004B7DAE /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -392,7 +384,7 @@
 				E7E57B052DA2D94C006F463E /* DebugEffects */,
 				E7E57C2E2DA2DE6A006F463E /* DebugEffectsFramework */,
 				E7E57B042DA2D94C006F463E /* Products */,
-				E7C4F5FE2DC00B8400126792 /* Shaders */,
+				E744519A2DC2DCB100E4C63C /* Shaders */,
 			);
 			sourceTree = "<group>";
 		};
@@ -482,6 +474,7 @@
 				E7E57C412DA2DE6A006F463E /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
+				E744519A2DC2DCB100E4C63C /* Shaders */,
 				E7A0A0322DA6E37200F550C7 /* Resources */,
 				E7E57B052DA2D94C006F463E /* DebugEffects */,
 				E7E57BBB2DA2DD6F006F463E /* CommonMetal */,
@@ -746,8 +739,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E7C4F6012DC00BFD00126792 /* Simple.metal in Sources */,
-				E7C4F5FF2DC00B8400126792 /* SimpleManifest.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

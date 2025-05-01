@@ -7,6 +7,7 @@ import os
 
 import SwiftUI
 
+
 extension NSImage : @unchecked Sendable {
 
   var cgImage: CGImage {
@@ -116,15 +117,7 @@ extension NSImage : @unchecked Sendable {
       
       return texture
   }
-  
-  
-  
-  
-  
-  
-  
-  
-  
+
   
   
   @MainActor func getHalfFloatTexture(_ t : MTKTextureLoader, width: Int, height: Int) -> MTLTexture? {

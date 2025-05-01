@@ -6,13 +6,13 @@ import DebugEffectsFramework
 
 struct SwiftUIMetalMainView: View {
   @State var selectedLib : String? = UserDefaults.standard.string(forKey: "selectedLib")
-  @State var debugFlag = false
   @State var selectedShader : String? = UserDefaults.standard.string(forKey: "selectedShader")
   @State var rescroll : Int = 0
   @FocusState var listFocus : Bool
   
   var extensions: [String : Manifest ] = [
     "Simple" : SimpleManifest(),
+    "Background" : BackgroundManifest(),
   ]
   
   @AppStorage("searchText") var searchText : String = ""
@@ -77,11 +77,6 @@ struct SwiftUIMetalMainView: View {
       return AnyView(Text("nothing selected") )
     }
     
-    return AnyView(
-      VStack {
-        Toggle(isOn: $debugFlag) { Text("Debug") }
-        AnyView(ext.getShaderView(debugFlag))
-      }
-    )
+    return ext.getShaderView()
   }
 }

@@ -9,7 +9,7 @@ public protocol AnyStitchDefinition : Identifiable {
   var name : String { get }
   var id : String { get }
 
-  @MainActor func getShaderView(_ debugFlag : Bool) -> AnyView
+  @MainActor func getShaderView() -> AnyView
   @MainActor func getSnapshot(_ s : CGSize) async -> NSImage
   @MainActor func teardown()
 }

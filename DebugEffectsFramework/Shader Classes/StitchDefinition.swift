@@ -10,13 +10,15 @@ import SwiftUI
   public let name: String
   public let shaderType: ShaderType
   public let shaderFn : ShaderFunction
+  public let background : BackgroundSpec?
   
   public var mdcache : MetalDelegate<T.Args>?
 
-  public init(_ n : String, _ t : ShaderType
+  public init(_ n : String, _ t : ShaderType, background: BackgroundSpec? = nil
   ) {
     name = n
     self.shaderType = t
+    self.background = background
     let co = MTLCompileOptions()
     co.libraryType = .dynamic
     co.libraries = []
@@ -31,27 +33,33 @@ import SwiftUI
     registry[n] = self
   }
   
-  @MainActor public func getShaderView(_ debugFlag : Bool) -> AnyView {
-    return AnyView( ShaderView(shader: self, debug: debugFlag) )
+  @MainActor public func getShaderView() -> AnyView {
+    return AnyView( ShaderView(shader: self) )
   }
   
-  @MainActor func getMetalDelegate(_ args : Binding<ArgProtocol<T.Args> >) -> MetalDelegate<T.Args> {
+  @MainActor func getMetalDelegate(_ args : ArgProtocol<T.Args> ) -> MetalDelegate<T.Args> {
     if let md = mdcache { return md }
     else {
-      let md = MetalDelegate( name: name, type: shaderType, args: args.wrappedValue
+      args.background = background
+      let md = MetalDelegate( name: name, type: shaderType, args: args
                               )
       mdcache = md
       md.beginShader()
-      (args.background as? (any VideoStream))?.startVideo()
+      background?.videoStream?.startVideo()
       return md
     }
   }
   
   @MainActor public func getSnapshot(_ s : CGSize) async -> NSImage {
     let args = ArgProtocol<T.Args>.init(id)
-
+    if args.background == nil {
+      args.background = background
+    } else {
+      print("background?")
+    }
+    
     try? await Task.sleep(for: .milliseconds(50))
-    let av = StitchWithArgs<T>(args: Binding.constant(args), preview: true, name: name,
+    let av = StitchWithArgs<T>(args: args, preview: true, name: name,
                                shaderType: shaderType, shaderFn: shaderFn)
 
     let renderer = ImageRenderer(content: AnyView( av ).frame(width: s.width, height: s.height) )

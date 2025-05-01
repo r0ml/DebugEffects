@@ -11,7 +11,7 @@ import Accelerate
 import SwiftUI
 
 
-public class VideoSupport : VideoStream, Equatable {
+public class VideoSupport : VideoStream, Equatable, @unchecked Sendable {
   nonisolated public func getAspectRatio() async -> CGFloat? {
     let v = self.video
     do {
@@ -28,7 +28,7 @@ public class VideoSupport : VideoStream, Equatable {
   }
   
   private var video : AVAsset
-  private var url : URL
+  public var url : URL
 
   // FIXME: make private again?
 
@@ -100,11 +100,12 @@ public class VideoSupport : VideoStream, Equatable {
     player.pause()
   }
 
-  @MainActor public func start() {
-    //   print("play")
+/*  @MainActor public func start() {
+    print("start \(url)")
     player.play()
   }
-
+*/
+  
   var loop : Bool = false
 
   public func startVideo() {
@@ -112,11 +113,13 @@ public class VideoSupport : VideoStream, Equatable {
     let v = self.video
     Task {
       try? await self.configure(v)
+      print("startVideo \(url)")
       player.play()
     }
   }
 
   public func stopVideo() {
+    print("stopVideo \(url)")
     player.pause()
   }
 
@@ -139,6 +142,7 @@ public class VideoSupport : VideoStream, Equatable {
 
 
   @MainActor private func getPixelsAsImage(_ currentTime : CMTime) -> CIImage? {
+    var ot : CMTime = .zero
     if let pci = player.currentItem,
        let pivo = pci.outputs.first as? AVPlayerItemVideoOutput,
        
@@ -146,8 +150,8 @@ public class VideoSupport : VideoStream, Equatable {
        // let currentTime = pivo.itemTime(forHostTime: nextVSync)
         
         // pivo.hasNewPixelBuffer(forItemTime: currentTime),
-        let pixelBuffer = pivo.copyPixelBuffer(forItemTime: currentTime, itemTimeForDisplay: nil)  {
-      
+        let pixelBuffer = pivo.copyPixelBuffer(forItemTime: player.currentTime(), itemTimeForDisplay: &ot)  {
+       // print(currentTime, ot)
       
       let ci = CIImage(cvPixelBuffer: pixelBuffer)
       return ci
@@ -239,11 +243,15 @@ public class VideoSupport : VideoStream, Equatable {
 
     //    player.seek(to: currentTime)
 
+//    print("nextVSync \(nextVSync)")
     let cmt = CMTime(seconds: nextVSync, preferredTimescale: 60)
+//    print("cmt \(cmt)")
     if let tx = getPixelsAsImage( cmt /* currentTime */ ) {
       //    self.myTexture = tx
+ //     print("got texture")
       return tx
     } else {
+//      print("nil")
       return nil
     }
 
@@ -256,6 +264,7 @@ public class VideoSupport : VideoStream, Equatable {
     if player.timeControlStatus == .paused {
       Task {
         await MainActor.run {
+          print("readBuffer play \(url)")
           player.play()
         }
       }
@@ -266,6 +275,7 @@ public class VideoSupport : VideoStream, Equatable {
     if player.timeControlStatus != .playing {
       Task {
         await MainActor.run {
+          print("readBuffer play2 \(url)")
           player.play()
         }
       }
@@ -293,11 +303,11 @@ public class VideoSupport : VideoStream, Equatable {
 
 
   // FIXME: I could cache the thumbnail for future reference
-  @MainActor func getThumbnail() -> CGImage {
+  func getThumbnail() async -> CGImage {
     if let t = thumbnail {
       return t
     }
-    let k = video.getThumbnailImage()
+    let k = await video.getThumbnailImage()
     thumbnail = k
     return k
   }

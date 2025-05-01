@@ -13,7 +13,7 @@ struct StitchWithArgs<T : ArgSetter > : View {
 
   @Environment(\.colorScheme) var colorScheme : ColorScheme
 
-  @Binding var args : ArgProtocol<T.Args>
+  var args : ArgProtocol<T.Args>
   @State var data : Data = Data()
   @State var controlState : ControlState = ControlState()
   @State var argArgs : [Shader.Argument] = []
@@ -26,13 +26,13 @@ struct StitchWithArgs<T : ArgSetter > : View {
   var shaderFn : ShaderFunction
   var shaderType : ShaderType
   
-  init(args : Binding<ArgProtocol<T.Args>>, preview : Bool, name : String, // argSetter : T.Type,
+  init(args : ArgProtocol<T.Args>, preview : Bool, name : String, // argSetter : T.Type,
        shaderType : ShaderType, shaderFn: ShaderFunction) {
     self.preview = preview
     self.name = name
     self.shaderFn = shaderFn
     self.shaderType = shaderType
-        self._args = args
+    self.args = args
   }
   
   func getArgs() -> [Shader.Argument] {
@@ -67,10 +67,10 @@ struct StitchWithArgs<T : ArgSetter > : View {
           var nn = args.background?.view ?? AnyView(Rectangle())
 
           TimelineView(  .animation(minimumInterval: 0.01, paused: controlState.paused && !controlState.singleStep)   ) {@MainActor context in
-            if let vv = (args.background as? (any VideoStream)),
+            if let vv = args.background?.videoStream,
                let xx = vv.readBufferAsImage( controlState.elapsedTime /*   now()  */ /* - controlState.deadTime */ /* t */ ) {
               if let nnn = NSImage.init(ciImage: xx.oriented(.down)) {
-                  let _ = nn = AnyView(Image(nsImage: nnn).resizable().scaledToFit())
+                let _ = nn = AnyView(Image.init(nsImage: nnn).resizable().scaledToFit())
             }
             }
 
@@ -85,6 +85,8 @@ struct StitchWithArgs<T : ArgSetter > : View {
             argArgs = getArgs()
           }.onChange(of: args.otherImage, initial: true) {
             argArgs = getArgs()
+          }.onChange(of: args.background, initial: true) {
+            print("background changed")
           }
 
 
@@ -94,9 +96,9 @@ struct StitchWithArgs<T : ArgSetter > : View {
             .onChange(of: controlState.paused, initial: true) { ov, nv in
               if nv { // paused
                 // FIXME: make startVideo / stopVideo methods on protocol Backgroundable
-                (args.background as? (any VideoStream))?.stopVideo()
+                args.background?.videoStream?.stopVideo()
               } else {
-                (args.background as? (any VideoStream))?.startVideo()
+                args.background?.videoStream?.startVideo()
               }
             }
         }

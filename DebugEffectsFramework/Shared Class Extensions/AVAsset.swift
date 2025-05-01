@@ -4,21 +4,19 @@
 import AVFoundation
 
 extension AVAsset {
-  public func getThumbnailImage() -> CGImage {
+  public func getThumbnailImage() async -> CGImage {
     let videoGen = AVAssetImageGenerator.init(asset: self )
     videoGen.requestedTimeToleranceBefore = CMTime(value: 1, timescale: 10)
     videoGen.requestedTimeToleranceAfter = CMTime(value: 1, timescale: 10)
     videoGen.appliesPreferredTrackTransform = true
-
     let imageGenerator = videoGen
+    
     let z = CMTime(seconds: 10, preferredTimescale: 60)
 
     do {
-      var actualTime : CMTime = CMTime.zero
-
-      // FIXME: the replacement here uses a callback -- must figure out how to make it async
-      let thumb = try imageGenerator.copyCGImage(at: z , actualTime: &actualTime)
-      return thumb
+//      let thumb = try imageGenerator.copyCGImage(at: z , actualTime: &actualTime)
+      let thumb = try await imageGenerator.image(at: z)
+      return thumb.image
     } catch let error {
       print("getting thumbnail ", error)
       return NSImage().cgImage

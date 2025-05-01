@@ -8,7 +8,7 @@ import AVFoundation
 public struct SimpleManifest : Manifest {
   
   public var registered = [String:any AnyStitchDefinition]()
-  public var libnam = "Default"
+  public var libnam = "Simple"
   
   /// Dictionary with section names as keys and array of scene views as values
   @MainActor public init() {
@@ -27,11 +27,11 @@ struct JustToggle : ArgSetter {
     var toggle = false
   }
 
-  var args : Binding<ArgProtocol<Args>>
+  @Bindable var args : ArgProtocol<Args>
 
   var body : some View {
         VStack {
-          Toggle(isOn: args.floatArgs.toggle) { Text("Toggle") }
+          Toggle(isOn: $args.floatArgs.toggle) { Text("Toggle") }
         }
       }
 }

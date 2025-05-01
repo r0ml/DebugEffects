@@ -21,7 +21,7 @@ public protocol AnyArgProtocol {
   public var name : String
   public var background : BackgroundSpec? // = BackgroundSpec(NSColor.systemMint.cgColor) // the background image -- could be a color or video?
   
-  init(_ n : String) {
+  @MainActor init(_ n : String) {
 //    self.init()
     name = n
     floatArgs = TFloatArgs.init()
@@ -47,22 +47,27 @@ public protocol AnyArgProtocol {
       }
     }
     
-    if let bm = UserDefaults.standard.data(forKey: "background.\(n)") ,
-        
-        // 2.
-        let resolvedUrl = try? URL(resolvingBookmarkData: bm,
-                                   options: [.withSecurityScope
-                                             //, withoutUI
-                                            ],
-                                   relativeTo: nil,
-                                   bookmarkDataIsStale: &bookmarkIsStale),
-       !bookmarkIsStale {
-      if resolvedUrl.startAccessingSecurityScopedResource() {
-        // FIXME: need to also create Webcam or Video or Color
-        if let ni = NSImage(contentsOf: resolvedUrl) {
-          background = BackgroundSpec(ni)
-        } else {
-          background = BackgroundSpec(NSColor.systemMint.cgColor)
+    if let bmx = UserDefaults.standard.data(forKey: "background.\(n)") {
+      let bm = bmx.dropFirst(2)
+      if bmx[0] == 2 || bmx[0] == 3,
+         // 2.
+         let resolvedUrl = try? URL(resolvingBookmarkData: bm,
+                                    options: [.withSecurityScope
+                                              //, withoutUI
+                                             ],
+                                    relativeTo: nil,
+                                    bookmarkDataIsStale: &bookmarkIsStale),
+         !bookmarkIsStale {
+        if resolvedUrl.startAccessingSecurityScopedResource() {
+          // FIXME: need to also create Webcam or Video or Color
+          if bmx[0] == 2,
+             let ni = NSImage(contentsOf: resolvedUrl) {
+            background = BackgroundSpec(ni)
+          } else if bmx[0] == 3 {
+            self.setBackgroundVideo(resolvedUrl)
+          } else {
+            background = BackgroundSpec(NSColor.systemMint.cgColor)
+          }
         }
       }
     } else {
@@ -70,6 +75,11 @@ public protocol AnyArgProtocol {
     }
   }
 
+  @MainActor func setBackgroundVideo(_ url : URL) {
+      let nv = VideoSupport(url: url)
+    background = BackgroundSpec(nv)
+  }
+  
   /*
   init(_ d : Data) {
 //    var dx = Self()
@@ -94,8 +104,8 @@ extension ArgProtocol {
 
 @MainActor public protocol ArgSetter : View {
  associatedtype Args : Instantiatable
-  var args : Binding<ArgProtocol<Args>> { get }
-  init(args : Binding<ArgProtocol<Args>>) 
+  var args : ArgProtocol<Args> { get }
+  init(args : ArgProtocol<Args>)
 }
 
 
@@ -106,16 +116,14 @@ public struct EmptyStruct : Instantiatable {
 
 /// This is the View (ArgSetter) for those shaders that do not have any parameters.  The settings view is empty.
 public struct NoArgs : ArgSetter {
-  public var args: Binding<ArgProtocol<EmptyStruct>>
+  @Bindable public var args: ArgProtocol<EmptyStruct>
   
-  public init(args v : Binding<ArgProtocol<EmptyStruct>>, ) {
+  public init(args v : ArgProtocol<EmptyStruct>, ) {
     args = v
-//    args.wrappedValue.background = BackgroundSpec(NSColor.systemMint.cgColor)
-//    args.wrappedValue.background = NSImage(named: "london_tower") ?? Color.mint
   }
  
   public var body : some View {
-    BackgroundableView(args.wrappedValue.name, args: args.background)
+    BackgroundableView(args.name, args: $args.background)
   }
 }
 
@@ -128,20 +136,20 @@ public struct JustImage<T : Instantiatable> : ArgSetter {
   
   @State var hovering = false
 
-  public var args: Binding<ArgProtocol<T>>
+  @Bindable public var args: ArgProtocol<T>
   
-  public init(args v : Binding<ArgProtocol<T>>) {
+  public init(args v : ArgProtocol<T>) {
     args = v
   }
 
   public var body : some View {
     // FIXME: use a "empy image" image
     HStack {
-      Image(nsImage: args.otherImage.wrappedValue ?? NSImage(named: "arid_mud")!)
+      Image(nsImage: args.otherImage ?? NSImage(named: "arid_mud")!)
         .resizable().scaledToFit()
         .frame(maxWidth: 100)
         .onDrop(of: [.fileURL, .image, .video, .movie], isTargeted: $hovering, perform: doDrop )
-      BackgroundableView(args.wrappedValue.name, args: args.background)
+      BackgroundableView(args.name, args: $args.background)
     }
 
   }
@@ -161,8 +169,8 @@ public struct JustImage<T : Instantiatable> : ArgSetter {
           
           let bookmarkData = try? url.bookmarkData(options: [.securityScopeAllowOnlyReadAccess], includingResourceValuesForKeys: nil, relativeTo: nil)
           Task { @MainActor in
-            UserDefaults.standard.set(bookmarkData, forKey: "otherImage.\(args.wrappedValue.name)")
-            args.wrappedValue.otherImage = k
+            UserDefaults.standard.set(bookmarkData, forKey: "otherImage.\(args.name)")
+            args.otherImage = k
           }
         }
       }

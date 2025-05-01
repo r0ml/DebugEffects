@@ -4,14 +4,14 @@
 import SwiftUI
 
 struct MetalWithArgs<T : ArgSetter> : View {
-  @Binding var args : ArgProtocol<T.Args>
+  var args : ArgProtocol<T.Args>
   var metalDelegate : MetalDelegate<T.Args>
   
   @State var controlState = ControlState()
   @State var aspect : CGFloat? = nil
 
-  init(args: Binding<ArgProtocol<T.Args>>, metalDelegate: MetalDelegate<T.Args>) {
-    self._args = args
+  init(args: ArgProtocol<T.Args>, metalDelegate: MetalDelegate<T.Args>) {
+    self.args = args
     self.metalDelegate = metalDelegate
 //    metalDelegate.controlState = $controlState
   }
@@ -38,10 +38,10 @@ struct MetalWithArgs<T : ArgSetter> : View {
   }
 
   func getAspectRatio() async -> CGFloat? {
-    if let m = metalDelegate.args.background?.image {
+    if let m = metalDelegate.args.background?.nsImage {
       let z = m.size.width / m.size.height
       return z
-    } else if let v = await (metalDelegate.args.background?.video)?.getAspectRatio() {
+    } else if let v = await (metalDelegate.args.background?.videoStream)?.getAspectRatio() {
       return v
     }
     return nil

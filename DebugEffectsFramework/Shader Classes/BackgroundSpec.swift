@@ -4,9 +4,9 @@
 import SwiftUI
 
 public class BackgroundSpec : Equatable {
-  public var color : CGColor?
-  public var image : NSImage?
-  public var video : (any VideoStream)?
+  private var color : CGColor?
+  private var image : NSImage?
+  private var video : (any VideoStream)?
   
   public init(_ c : CGColor) {
     color = c
@@ -37,13 +37,24 @@ public class BackgroundSpec : Equatable {
     return false
   }
   
-  public var view : AnyView {
+ @MainActor public var view : AnyView {
     if let c = color {
       return AnyView( Color(cgColor: c).edgesIgnoringSafeArea(.all) )
     } else if let i = image {
       return AnyView( Image(nsImage: i).resizable().scaledToFit().edgesIgnoringSafeArea(.all) )
+    } else if let v = video {
+      return AnyView( MyAsyncImage {
+        let im = await (v as! VideoSupport).getThumbnail()
+        let imx = NSImage(cgImage: im, size: NSSize(width: im.width, height: im.height))
+        return imx }
+    )
     } else {
-      fatalError("video not implemented yet")
+      return AnyView(Rectangle())
+//      fatalError("video not implemented yet")
     }
   }
+  
+  public var videoStream : (any VideoStream)? { video }
+  public var bgColor : CGColor? { color }
+  public var nsImage : NSImage? { image }
 }
