@@ -20,7 +20,7 @@ public struct ShaderView<T : ArgSetter> : View, Sendable {
     } else {
       print("background video?")
     }
-    args = aa
+    self.args = aa
   }
   
   @MainActor var mag : some Gesture {
@@ -39,7 +39,7 @@ public struct ShaderView<T : ArgSetter> : View, Sendable {
       if debugFlag {
         AnyView(
           // FIXME: I should need to pass $args twice in one line
-          MetalWithArgs<T>(args: args, metalDelegate: shader.getMetalDelegate(args) )
+          MetalWithArgs<T>(metalDelegate: shader.getMetalDelegate(args) )
         )
       } else {
         AnyView(

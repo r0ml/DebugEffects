@@ -44,19 +44,18 @@ public class VideoSupport : VideoStream, Equatable, @unchecked Sendable {
 
   var observer : NSObject?
   var configured = false
-  
+  var loop : Bool = false
+
   deinit {
     print("deinit videostream")
     player.pause()
   }
 
-  
   public func seekForward(by: TimeInterval) async {
     let k = player.currentTime().seconds;
     let kx = CMTime(seconds: k + by, preferredTimescale: player.currentTime().timescale)
     await player.seek(to: kx)
   }
-  
   
   @MainActor public init( url u : URL ) {
     url = u
@@ -110,8 +109,6 @@ public class VideoSupport : VideoStream, Equatable, @unchecked Sendable {
     player.pause()
   }
   
-  var loop : Bool = false
-
   public func startVideo() {
     print("start video")
     let v = self.video
@@ -147,19 +144,15 @@ public class VideoSupport : VideoStream, Equatable, @unchecked Sendable {
     self.region = MTLRegionMake2D(0, 0, mtd.width, mtd.height)
   }
 
-
-
-
   @MainActor private func getPixelsAsImage(_ currentTime : CMTime) -> CIImage? {
     var ot : CMTime = .zero
     if let pci = player.currentItem,
        let pivo = pci.outputs.first as? AVPlayerItemVideoOutput,
        
-        //
-       // let currentTime = pivo.itemTime(forHostTime: nextVSync)
+        // let ct = pivo.itemTime(forHostTime: currentTime),
         
-        // pivo.hasNewPixelBuffer(forItemTime: currentTime),
-        let pixelBuffer = pivo.copyPixelBuffer(forItemTime: player.currentTime(), itemTimeForDisplay: &ot)  {
+        pivo.hasNewPixelBuffer(forItemTime: currentTime),
+       let pixelBuffer = pivo.copyPixelBuffer(forItemTime: player.currentTime(), itemTimeForDisplay: &ot)  {
        // print(currentTime, ot)
       
       let ci = CIImage(cvPixelBuffer: pixelBuffer)
@@ -221,24 +214,12 @@ public class VideoSupport : VideoStream, Equatable, @unchecked Sendable {
     return self.frameTexture
   }
 
-  public func readBufferAsImage(_ nVSync : TimeInterval) -> CIImage? /* NSImage? */ {
+  public func readBufferAsImage(_ nVSync : TimeInterval) -> CIImage? {
     let nextVSync = nVSync
 
-    //    print(player.timeControlStatus.rawValue.description)
-
-    //    if player.timeControlStatus == .paused {
-    //      player.play()
-    //      print("paused")
-    //      nextVSync += 10
-    //      return nil
-    //    } else
     if player.timeControlStatus == .waitingToPlayAtSpecifiedRate {
       return nil
     }
-    //    else if player.timeControlStatus != .playing {
-    //      player.play()
-    //      return nil
-    //    }
 
     guard looper.loopingPlayerItems.count > 0 else {
       return nil
@@ -253,7 +234,7 @@ public class VideoSupport : VideoStream, Equatable, @unchecked Sendable {
     //    player.seek(to: currentTime)
 
 //    print("nextVSync \(nextVSync)")
-    let cmt = CMTime(seconds: nextVSync, preferredTimescale: 60)
+    let cmt = CMTime(seconds: nextVSync, preferredTimescale: 1000000000)
 //    print("cmt \(cmt)")
     if let tx = getPixelsAsImage( cmt /* currentTime */ ) {
       //    self.myTexture = tx
@@ -303,15 +284,8 @@ public class VideoSupport : VideoStream, Equatable, @unchecked Sendable {
     let tx = getPixelsAsTexture(currentTime)
     self.frameTexture = tx
     return tx
-
   }
 
-
-
-
-
-
-  // FIXME: I could cache the thumbnail for future reference
   func getThumbnail() async -> CGImage {
     if let t = thumbnail {
       return t
@@ -320,21 +294,15 @@ public class VideoSupport : VideoStream, Equatable, @unchecked Sendable {
     thumbnail = k
     return k
   }
-
-
 }
-
 
 extension AVAsset {
   nonisolated func resolutionSizeForLocalVideo() async throws -> CGSize {
     var unionRect = CGRect.zero
     for track in try await self.loadTracks(withMediaCharacteristic: .visual)  {
       let (ns, pt) = try await track.load(.naturalSize, .preferredTransform)
-      let trackRect = CGRect(x: 0, y: 0, width:
-                              ns.width, height:
-                              ns.height).applying(pt)
+      let trackRect = CGRect(x: 0, y: 0, width: ns.width, height: ns.height).applying(pt)
       unionRect = unionRect.union(trackRect)
-
     }
     return unionRect.size
   }

@@ -33,7 +33,6 @@ import Foundation
   func doStep() {
     if singleStep {
       paused = true
-      print("control.singleStep = false")
       singleStep = false
       deadTime -= 0.016
     }
@@ -103,11 +102,8 @@ struct ControlView : View {
               
               Image(systemName: "chevron.right.to.line" /* "arrowkeys.right.fill" */ ).resizable().scaledToFit()
                 .frame(width: buttonSize, height: buttonSize).onTapGesture {
-                  print("controlState.singleStep = true")
                   controlState.singleStep = true
-              
                   controlState.paused = false
-                
               }
               
             }

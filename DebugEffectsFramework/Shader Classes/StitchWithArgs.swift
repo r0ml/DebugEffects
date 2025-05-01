@@ -99,8 +99,7 @@ struct StitchWithArgs<T : ArgSetter > : View {
                 if let v = args.background?.videoStream,
                    let vv = v as? VideoSupport {
                   Task {
-                    await vv.seekForward(by: 1/60.0)
-                    vv.startVideo()
+                    await vv.seekForward(by: 1/10.0)
                   }
                 }
               }

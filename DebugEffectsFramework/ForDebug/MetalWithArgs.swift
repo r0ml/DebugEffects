@@ -4,14 +4,12 @@
 import SwiftUI
 
 struct MetalWithArgs<T : ArgSetter> : View {
-  var args : ArgProtocol<T.Args>
   var metalDelegate : MetalDelegate<T.Args>
   
   @State var controlState = ControlState()
   @State var aspect : CGFloat? = nil
 
-  init(args: ArgProtocol<T.Args>, metalDelegate: MetalDelegate<T.Args>) {
-    self.args = args
+  init(metalDelegate: MetalDelegate<T.Args>) {
     self.metalDelegate = metalDelegate
 //    metalDelegate.controlState = $controlState
   }
@@ -24,13 +22,19 @@ struct MetalWithArgs<T : ArgSetter> : View {
           .task { aspect = await self.getAspectRatio() }
       }
       ControlView(controlState: $controlState)
-    }.onChange(of: args.floatArgs, initial: true) {
-      withUnsafePointer(to: self.args.floatArgs) {
-        metalDelegate.argBuffer.contents().copyMemory(from: $0, byteCount: MemoryLayout.size(ofValue: args.floatArgs))
-      }
-    }.onChange(of: args.otherImage, initial: true) {
-      metalDelegate.args.otherImage = args.otherImage
     }
+    .onChange(of: metalDelegate.args.floatArgs, initial: true) {
+      withUnsafePointer(to: metalDelegate.args.floatArgs) {
+        metalDelegate.argBuffer.contents().copyMemory(from: $0, byteCount: MemoryLayout.size(ofValue: metalDelegate.args.floatArgs))
+      }
+    }
+    /*
+    .onChange(of: args.otherImage, initial: true) {
+      metalDelegate.args.otherImage = args.otherImage
+    }.onChange(of: args.background, initial: true) {
+      metalDelegate.args.background = args.background
+    }
+     */
     .task {
       metalDelegate.controlState = $controlState
     }

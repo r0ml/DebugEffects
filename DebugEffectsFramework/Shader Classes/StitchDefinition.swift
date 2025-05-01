@@ -62,7 +62,10 @@ import SwiftUI
     let av = StitchWithArgs<T>(args: args, preview: true, name: name,
                                shaderType: shaderType, shaderFn: shaderFn)
 
-    return av.frame(width: s.width, height: s.height)
+    return VStack {
+      av
+      Text(name)
+    }.frame(width: s.width, height: s.height)
     
 //    let renderer = ImageRenderer(content: AnyView( av ).frame(width: s.width, height: s.height) )
 //        // FIXME: make sure and use the correct display scale for this device
