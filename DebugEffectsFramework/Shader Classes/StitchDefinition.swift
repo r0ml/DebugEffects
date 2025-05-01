@@ -50,22 +50,24 @@ import SwiftUI
     }
   }
   
-  @MainActor public func getSnapshot(_ s : CGSize) async -> NSImage {
+  @MainActor public func getSnapshot(_ s : CGSize)  -> any View {
     let args = ArgProtocol<T.Args>.init(id)
     if args.background == nil {
       args.background = background
     } else {
-      print("background?")
+//      print("background?")
     }
     
-    try? await Task.sleep(for: .milliseconds(50))
+//    try? await Task.sleep(for: .milliseconds(50))
     let av = StitchWithArgs<T>(args: args, preview: true, name: name,
                                shaderType: shaderType, shaderFn: shaderFn)
 
-    let renderer = ImageRenderer(content: AnyView( av ).frame(width: s.width, height: s.height) )
-        // FIXME: make sure and use the correct display scale for this device
-      renderer.scale = 1 // displayScale
-    return renderer.nsImage ?? NSImage()
+    return av.frame(width: s.width, height: s.height)
+    
+//    let renderer = ImageRenderer(content: AnyView( av ).frame(width: s.width, height: s.height) )
+//        // FIXME: make sure and use the correct display scale for this device
+//      renderer.scale = 1 // displayScale
+//    return renderer.nsImage ?? NSImage()
   }
 
   @MainActor public func teardown() {

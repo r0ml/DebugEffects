@@ -5,15 +5,11 @@
 
 - First time the camera is authorized, it fails to appear.  Restarting the app makes it work.  Parameterized > MonochromeFade
 
-- moving away from a video shader, then back again, causes weird jerky update-once-a-second behavior.
-
 - need to implement a way to pass the additional image to the view (as a parameter/option)
 
 - Use scrollPosition instead of ScrollReader
 
-** - Make UI to get images in arguments
 ** - Make UI to get background in arguments
-- Make UI to get videos in arguments
 - Make UI to get Webcam in arguments
 
 - figure out a way to stack effects (i.e. pre-view effects and post-view effects for the metal views)

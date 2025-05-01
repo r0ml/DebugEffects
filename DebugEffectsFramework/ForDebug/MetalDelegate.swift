@@ -54,22 +54,11 @@ import os
   
   var textureSize : CGSize?
   
-  //  @MainActor var mouseBuffer = device.makeBuffer(length: MemoryLayout<SIMD2<Float>>.stride)!
-  //  @MainActor var touchBuffer = device.makeBuffer(length: MemoryLayout<SIMD2<Float>>.stride)!
-  
   var renderPassDescriptor : MTLRenderPassDescriptor?
   
   var args : ArgProtocol<T>
   
   var controlState : Binding<ControlState>?
-
-//  public var isSteppingx : Bool = false
-  // @Published
-//  public var isRunningx: Bool = true
-  
-  
-  
-  
   
   public func setVideoRecorder(_ m : MetalVideoRecorder?) {
     videoRecorder = m
@@ -80,9 +69,7 @@ import os
     gpuSemaphore.signal()
   }
   
-  //  public var ext : any Extensionable
-  
-  
+
   @MainActor public init(name: String,
                          type: ShaderType,
                          args: ArgProtocol<T>) {
@@ -113,31 +100,14 @@ import os
   // If I set a stop here, then the thumbnail preview works for snapshot (but not for animation?)
   @MainActor public func sampleAt(seconds: Double, size: CGSize) async -> NSImage {
     beginShader()
+
     //    await times.setTime(seconds)
     
-//    self.isSteppingx = true
     controlState?.wrappedValue.paused = false
     
     guard size.width > 0 && size.height > 0 else { return NSImage() }
     return await draw(size: size, at: seconds)
   }
-  
-  
-  /*
-  @MainActor open func stop() async {
-    guard isRunningx else { return }
-    //    await MainActor.run {
-    self.isRunningx = false
-    self.isSteppingx = false
-    //    }
-    //    stopRunning()
-    
-    // config.webcam?.stopCapture()
-    // config.videoNames.forEach { $0.pause() }
-    
-    NotificationCenter.default.removeObserver(self)
-  }
-  */
   
   @MainActor public func beginShader() {
     //    log.debug("\(#function)")
@@ -152,47 +122,6 @@ import os
     shader.setupRenderPipeline( /* ctrl: k */)
   }
   
-  /*
-  @MainActor open func play() async {
-    guard !isRunningx else { return }
-    self.isRunningx = true
-    self.isSteppingx = false
-    
-    await times.play()
-    
-    //   shader.config.videoNames.forEach { $0.start() }
-    
-    //   startRunning()
-  }
-  */
-  
-  /*
-  open func rewind() async {
-    await times.rewind()
-    iFrame = -1
-  }
-  */
-  
-/*
-  public func singleStep( ) async {
-    // this should only work when I'm paused
-    
-    // single step backwards if shift key is pressed
-    let shifted = NSEvent.modifierFlags.contains(.shift)
-    
-    var timeStep : Double = 0
-    if shifted {
-      timeStep = 1/60.0
-      iFrame -= 2
-    } else {
-      timeStep = 1/60.0
-    }
-    
-    await times.advance(timeStep)
-    isSteppingx = true
-  }
-  */
-  
   public func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
     
     //    log.debug("\(#function) \(size.width)x\(size.height)")
@@ -201,11 +130,7 @@ import os
     
     drawableSize = size
   }
-  
-  
-  
-  
-  
+
   
   /// return false to abort
   func doRunning( /* _ view : MTKView */ ) -> Bool {
@@ -232,9 +157,7 @@ import os
     
     if let ldd = lastDrawableDisplayed,
        let imageOfView = CIImage.init(mtlTexture: ldd, options: nil)?.nsImage {
-      //  let imageOfView = NSImage.init(cgImage: imageRef, size: CGSize(width: imageRef.width, height: imageRef.height))
       imageToSave.theImage = imageOfView
-      //       imageOfView.writePNG(toURL: savePanel.url!)
     }
   }
   
@@ -245,8 +168,6 @@ import os
   @objc(drawInMTKView:) @MainActor public func draw(in view: MTKView) {
     // called per frame
     // log.debug("\(#function)")
-    //    Task {
-    //      await MainActor.run {
     if iFrame == 0 {
       //      log.debug("isRunningx = \(self.isRunningx)")
     }
@@ -260,19 +181,10 @@ import os
     
     if controlState?.wrappedValue.paused == false || controlState?.wrappedValue.singleStep == true  { //  isRunningx || isSteppingx {
 
-      // FIXME: do stepping
-      /*
-      if self.isSteppingx {
-        self.isSteppingx = false }
-      //          }
-      */
-      
       controlState?.wrappedValue.doStep()
         ddraw( view:  view)
     }
   }
-  
-  
   
   
   @MainActor public func draw(size: CGSize, at: Double) async -> NSImage {
@@ -387,7 +299,6 @@ import os
                    times: times)
       
       //      let bsf = view.window?.screen?.backingScaleFactor
-      
       //      if let bsf {
       //        scale = Float(bsf)
       //      }
@@ -414,14 +325,7 @@ import os
         //       let end = commandBuffer.gpuEndTime
         //       let gpuRuntimeDuration = end - start
       }
-      
-      
-      
-      
-      
-      
       commandBuffer.present(texz)
-      //  doTheBlit(commandBuffer, rpd)
       
     } else {
       print("why did I get here?")
@@ -700,10 +604,6 @@ extension MetalDelegate {
     renderEncoder.setFragmentBuffer(perNodeData, offset: 0, index: perNodeDataId)
     
     let mouse = self.locations.getHitLocation()
-//    mouseBuffer.contents().assumingMemoryBound(to: SIMD2<Float>.self).pointee = mouse
-
-//    let lastTouch = SIMD2<Float>(0.2, 0.2)
-//    touchBuffer.contents().assumingMemoryBound(to: SIMD2<Float>.self).pointee = lastTouch
 
     // ====================================================================================
     
@@ -722,16 +622,9 @@ extension MetalDelegate {
     // the pointee must be on the next (and subsequent) lines
     let kk = myDataBuffer!.contents().assumingMemoryBound(to: MyData.self)
     kk.pointee.mouse = mouse
-//    kk.funci = 0
     kk.pointee.size = sz
-//    print("mouse = \(mouse), size = \(sz)")
     
     renderEncoder.setFragmentBuffer(myDataBuffer!, offset: 0, index: 2)
-
-//    myDataBuffer!.didModifyRange(0..<myDataBuffer!.allocatedSize)
-
-
-    // FIXME: the argBuffer has to be set somewhere
     renderEncoder.setFragmentBuffer(argBuffer, offset: 0, index: 9)
   }
   

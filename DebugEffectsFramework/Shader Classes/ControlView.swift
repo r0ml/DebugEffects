@@ -33,6 +33,7 @@ import Foundation
   func doStep() {
     if singleStep {
       paused = true
+      print("control.singleStep = false")
       singleStep = false
       deadTime -= 0.016
     }
@@ -68,6 +69,7 @@ import Foundation
 }
 
 
+let buttonSize : CGFloat = 32
 
 struct ControlView : View {
   @Binding var controlState : ControlState
@@ -75,7 +77,7 @@ struct ControlView : View {
   var body: some View {
     HStack(spacing: 20) {
       Image(systemName: "backward.end").resizable().scaledToFit()
-            .frame(width: 64, height: 64).onTapGesture {
+            .frame(width: buttonSize, height: buttonSize).onTapGesture {
               controlState.reset()
           }
 
@@ -83,28 +85,31 @@ struct ControlView : View {
       if !controlState.paused {
             HStack() {
               Image(systemName: "pause.circle").resizable().scaledToFit()
-                .frame(width: 64, height: 64).onTapGesture {
+                .frame(width: buttonSize, height: buttonSize).onTapGesture {
                   controlState.paused.toggle()
                 }
               // This is `hidden` to keep things in the same place
               Image(systemName: "playpause" /* "chevron.right.to.line" */ /* "arrowkeys.right.fill" */).resizable().scaledToFit().hidden()
-                .frame(width: 64, height: 64).onTapGesture {
+                .frame(width: buttonSize, height: buttonSize).onTapGesture {
                     print("single-step")
                 }
             }
           } else {
             HStack() {
               Image(systemName: "play.circle").resizable().scaledToFit()
-                .frame(width: 64, height: 64).onTapGesture {
+                .frame(width: buttonSize, height: buttonSize).onTapGesture {
                   controlState.paused.toggle()
               }
               
               Image(systemName: "chevron.right.to.line" /* "arrowkeys.right.fill" */ ).resizable().scaledToFit()
-                .frame(width: 64, height: 64).onTapGesture {
+                .frame(width: buttonSize, height: buttonSize).onTapGesture {
+                  print("controlState.singleStep = true")
                   controlState.singleStep = true
+              
                   controlState.paused = false
                 
               }
+              
             }
           }
          Spacer()
@@ -124,7 +129,7 @@ struct ControlView : View {
 //            }
 
             
-            .frame(width: 64, height: 64).onTapGesture {
+            .frame(width: buttonSize, height: buttonSize).onTapGesture {
 /*
             shader.imageToSave.grabImage = true
               saveImage = true
@@ -169,7 +174,7 @@ struct ControlView : View {
      */
               }
   */
-              .frame(width:64, height: 64)
+              .frame(width:buttonSize, height: buttonSize)
           
               .onTapGesture {
 /*                if let v = self.shader.videoRecorder {
@@ -205,9 +210,9 @@ struct ControlView : View {
                 print("record")
           }
 
-          Spacer().frame(width: 64)
+          Spacer().frame(width: buttonSize)
           
-        }.frame(minWidth: 600, minHeight: 70)
+    }.frame(minWidth: 600, minHeight: buttonSize * 1.2)
       .task {
         await controlState.metronome()
       }

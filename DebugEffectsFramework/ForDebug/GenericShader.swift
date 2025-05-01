@@ -67,7 +67,6 @@ public struct GenericShader : @unchecked Sendable {
     // this is the actual rendering fragment shader
     
     //    log.debug("\(#function)")
-//    let tpo = MTLPrimitiveType.triangleStrip
     let tpx : MTLPrimitiveTopologyClass = .triangle
     
     let psd = MTLRenderPipelineDescriptor()

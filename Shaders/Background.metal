@@ -8,18 +8,6 @@ using namespace metal;
 
 // =================================================================
 
-colorEffect(solarization) {
-  const half3 threshold = { 1, 0.92, 0.1 };
-  const float m = mouse.x * size.x ;
-  
-  const float line = smoothstep(0, 1 , abs(m - position.x));
-  const bool3 cfb = currentColor.xyz < threshold;
-  const half3 cf =  half3(cfb) + sign(0.5 - half3(cfb) ) * currentColor.xyz;
-  const half3 cr = line * mix(cf, currentColor.xyz, position.x < m);
-  return opaque(cr);
-}
-
-// =================================================================
 
 colorEffect(toSepia) {
   const half4x4 rgba2sepia = half4x4(
@@ -45,7 +33,7 @@ colorEffect(nightVision) {
 // =================================================================
 
 colorEffect(nightVision02) {
-  const float2 u = worldCoordAdjusted(position, size);
+  const float2 u = worldCoord(position, size);
   const float2 n = u * nodeAspect(size);
   const float t = time;
 
@@ -68,7 +56,7 @@ colorEffect(monochromeFade) {
 
 // =================================================================
 
-colorEffect(mouse) {
+colorEffect(colorCycle) {
   const float z = 1 / sqrt(3.0);
   const half3 cc = currentColor.xyz;
   const half3 cr = cross(z, cc) * sin(time);
@@ -110,7 +98,7 @@ colorEffect(derivatives) {
 
 // =================================================================
 
-colorEffect(faded) {
+colorEffect(vignette01) {
   const float EDGE = 0.2;
   const float2 uv = position / size;
   const float edge = EDGE * abs(sin(time / 5));
@@ -245,28 +233,7 @@ colorEffect(wall03) {
 
 // =================================================================
 
-colorEffect(vignette03) {
-  const float boost = mouse.x < 0.01 ? 1.5 : mouse.x * 2.0;
-  const float reduction = mouse.y < 0.01 ? 2.0 : mouse.y * 4.0;
-  const half3 col = currentColor.rgb;
-  const float vignette = distance( 0.5, position / size);
-  return opaque( col * ( boost - vignette * reduction) );
-}
 
-
-// =================================================================
-
-colorEffect(vignette04) {
-  const float2 uv = position / size;
-  const half3 col = currentColor.rgb;
-  const half dist = distance(uv, float2(0.5));
-  const half falloff = mouse.y < 0.01 ? 0.1 : mouse.y;
-  const half amount = mouse.x < 0.01 ? 1.0 : mouse.x ;
-  return opaque( col * smoothstep(half(0.8), half(falloff * 0.8), dist * (amount + falloff)));
-}
-
-
-// =================================================================
 
 colorEffect(dotty) {
   return step(length(fract(position * 0.1) * 2 - 1), currentColor);
@@ -289,7 +256,7 @@ colorEffect(emboss02) {
 
 // =================================================================
 
-colorEffect(fading) {
+colorEffect(spotlight01) {
   const float d = 1.0-length(( position / size * 2 - 1) - cos(time) * 0.4) * 2.0;
   return opaque( d * currentColor.rgb);
 }
@@ -298,24 +265,15 @@ colorEffect(fading) {
 
 colorEffect(grate) {
   const float2 uv = position / size * nodeAspect(size);
-  const float tile = 200.0;
+  const float tile = size.x / 10;
   const float2 oo = sin(uv*tile + float2(0, time*10.0)) * 0.5 + 0.5;
-  const float doo = smoothstep(0.2, 0.8, 1.0 - dot(oo, 1.0));
+  const float doo = smoothstep(0.2, 0.8, 1 - dot(oo, 1.0));
   return currentColor * doo;
 }
 
 
 // =================================================================
 
-colorEffect(dither) {
-  const float2 Ux = position + ( 8.*fwidth(currentColor.r) - 0.5) ;
-  const float2 U = Ux/2;
-  return opaque(0.1 / fract( sin(100000 * length(ceil(U))) < 0  ? U.x : U.y ));
-}
-
-
-// =================================================================
- 
 colorEffect(shutter) {
   float2 U = worldCoordAdjusted(position, size);
   
@@ -339,11 +297,3 @@ colorEffect(shutter) {
 
 // =================================================================
 
-colorEffect(shadows01) {
-  const float2 d = nodeAspect(size) * (position / size - mouse);
-  const float2 s = .15;
-  const float r = dot(d, d)/dot(s,s);
-  return opaque(currentColor.rgb * (1.5 - r) );
-}
-
-// =================================================================

@@ -10,7 +10,7 @@ public protocol AnyStitchDefinition : Identifiable {
   var id : String { get }
 
   @MainActor func getShaderView() -> AnyView
-  @MainActor func getSnapshot(_ s : CGSize) async -> NSImage
+  @MainActor func getSnapshot(_ s : CGSize) -> any View
   @MainActor func teardown()
 }
 
@@ -35,7 +35,7 @@ public struct DummyManifest : Manifest {
 
 extension AnyStitchDefinition {
   
-  @MainActor public func previewFor() -> any View {
+/*  @MainActor public func previewFor() -> any View {
     return VStack {
       MyAsyncImage(closure:  {
         let z = await self.getSnapshot(CGSize(width: 220, height: 150))
@@ -44,5 +44,6 @@ extension AnyStitchDefinition {
       Text(name)
     }
   }
+ */
   
 }

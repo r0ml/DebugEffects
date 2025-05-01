@@ -14,11 +14,11 @@ public struct BackgroundManifest : Manifest {
   @MainActor public init() {
 
     for i in [
-      "solarization", "toSepia", "nightVision", "nightVision02",
-      "monochromeFade", "mouse", "derivatives", "faded",
-      "imageCel", "bevelled", "money", "wall03", "vignette03",
-      "vignette04", "dotty", "emboss", "emboss02", "fading", "grate",
-      "dither", "shutter", "shadows01",
+      "toSepia", "nightVision", "nightVision02",
+      "monochromeFade", "colorCycle", "derivatives", "vignette01",
+      "imageCel", "bevelled", "money", "wall03",
+      "dotty", "emboss", "emboss02", "spotlight01", "grate",
+      "shutter",
     ] {
       self.register(StitchDefinition<NoArgs>(i, .color, background: BackgroundSpec(NSImage(named: "london_tower")!)))
     }

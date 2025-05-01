@@ -18,12 +18,7 @@ public struct MetalView<T : Instantiatable> : NSViewRepresentable {
     
     mtkView.wantsLayer = true
     let ml = mtkView.layer!
-//    ml.contentsScale = 1 -- does nothing
-    
-    // FIXME: is this why the colors don't match
-//    ml.backgroundColor = (context.environment.colorScheme == .dark ? XColor.darkGray : XColor.lightGray).cgColor
     ml.backgroundColor = NSColor.black.cgColor
-
     ml.opacity = 1.0
     
     mtkView.sampleCount = multisampleCount

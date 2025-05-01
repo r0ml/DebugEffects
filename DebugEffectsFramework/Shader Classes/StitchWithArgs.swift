@@ -3,6 +3,7 @@
 
 import SwiftUI
 import UniformTypeIdentifiers
+import AVFoundation
 
 /** This stores the location of the last mouse point -- in local view pixel coordinates */
 class Location {
@@ -86,21 +87,33 @@ struct StitchWithArgs<T : ArgSetter > : View {
           }.onChange(of: args.otherImage, initial: true) {
             argArgs = getArgs()
           }.onChange(of: args.background, initial: true) {
-            print("background changed")
+//            print("background changed")
           }
 
 
           .clipped()
 
           ControlView(controlState: $controlState)
-            .onChange(of: controlState.paused, initial: true) { ov, nv in
-              if nv { // paused
-                // FIXME: make startVideo / stopVideo methods on protocol Backgroundable
-                args.background?.videoStream?.stopVideo()
-              } else {
-                args.background?.videoStream?.startVideo()
+            .onChange(of: controlState.singleStep) { ov, nv in
+              if nv {
+                if let v = args.background?.videoStream,
+                   let vv = v as? VideoSupport {
+                  Task {
+                    await vv.seekForward(by: 1/60.0)
+                    vv.startVideo()
+                  }
+                }
               }
             }
+}
+            .onChange(of: controlState.paused, initial: true) { ov, nv in
+              if nv { // paused
+                  // FIXME: make startVideo / stopVideo methods on protocol Backgroundable
+                  args.background?.videoStream?.stopVideo()
+              } else {
+                  args.background?.videoStream?.startVideo()
+              }
+            
         }
                   )
 

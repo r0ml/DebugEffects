@@ -43,12 +43,21 @@ public class VideoSupport : VideoStream, Equatable, @unchecked Sendable {
   private var region : MTLRegion = MTLRegion()
 
   var observer : NSObject?
-
+  var configured = false
+  
   deinit {
     print("deinit videostream")
     player.pause()
   }
 
+  
+  public func seekForward(by: TimeInterval) async {
+    let k = player.currentTime().seconds;
+    let kx = CMTime(seconds: k + by, preferredTimescale: player.currentTime().timescale)
+    await player.seek(to: kx)
+  }
+  
+  
   @MainActor public init( url u : URL ) {
     url = u
     video = AVURLAsset(url: u)
@@ -97,29 +106,29 @@ public class VideoSupport : VideoStream, Equatable, @unchecked Sendable {
   }
 
   @MainActor public func pause() {
+    print("pause")
     player.pause()
   }
-
-/*  @MainActor public func start() {
-    print("start \(url)")
-    player.play()
-  }
-*/
   
   var loop : Bool = false
 
   public func startVideo() {
-    //    print("start")
+    print("start video")
     let v = self.video
-    Task {
-      try? await self.configure(v)
-      print("startVideo \(url)")
+    
+    if configured {
       player.play()
+    } else {
+      Task {
+        try? await self.configure(v)
+        configured = true
+        player.play()
+      }
     }
   }
 
   public func stopVideo() {
-    print("stopVideo \(url)")
+    print("stopVideo")
     player.pause()
   }
 
