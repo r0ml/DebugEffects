@@ -6,9 +6,8 @@ import SwiftUI
 struct MetalWithArgs<T : ArgSetter> : View {
   var metalDelegate : MetalDelegate<T.Args>
   
-  @State var controlState = ControlState()
   @State var aspect : CGFloat? = nil
-
+  
   init(metalDelegate: MetalDelegate<T.Args>) {
     self.metalDelegate = metalDelegate
 //    metalDelegate.controlState = $controlState
@@ -17,11 +16,17 @@ struct MetalWithArgs<T : ArgSetter> : View {
   var body : some View {
     VStack {
       GeometryReader { g in
-        MetalView<T.Args>(delegate: metalDelegate)
-          .aspectRatio(aspect ?? (g.size.width / g.size.height), contentMode: .fit)
-          .task { aspect = await self.getAspectRatio() }
-      }
-      ControlView(controlState: $controlState)
+        VStack {
+          MetalView<T.Args>(delegate: metalDelegate)
+            .aspectRatio( aspect ?? (g.size.width / g.size.height), contentMode: .fit)
+          // FIXME: this needs to be done in a separate task because getting the aspect ration of a
+          // video is async.  If the aspect ratio were computed when loaded, it would be available here.
+            .task { aspect = await self.getAspectRatio() }
+        }
+      }.aspectRatio(aspect, contentMode: .fit)
+      .clipped()
+      
+//      ControlView(controlState: $controlState)
     }
     .onChange(of: metalDelegate.args.floatArgs, initial: true) {
       withUnsafePointer(to: metalDelegate.args.floatArgs) {
@@ -31,13 +36,14 @@ struct MetalWithArgs<T : ArgSetter> : View {
     /*
     .onChange(of: args.otherImage, initial: true) {
       metalDelegate.args.otherImage = args.otherImage
-    }.onChange(of: args.background, initial: true) {
+    }
+    .onChange(of: args.background, initial: true) {
       metalDelegate.args.background = args.background
     }
      */
-    .task {
-      metalDelegate.controlState = $controlState
-    }
+//    .task {
+//      metalDelegate.controlState = $controlState
+//    }
     
   }
 

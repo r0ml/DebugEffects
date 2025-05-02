@@ -20,7 +20,7 @@ public final class Locations : @unchecked Sendable {
   
   public func setHitLocation(_ c : SIMD2<Float>) {
     hitLocation = c
-    print(hitLocation)
+    //  print(hitLocation)
   }
   
   public func getHitLocation() -> SIMD2<Float> {

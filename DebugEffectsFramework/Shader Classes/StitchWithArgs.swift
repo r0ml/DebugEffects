@@ -16,8 +16,8 @@ struct StitchWithArgs<T : ArgSetter > : View {
 
   var args : ArgProtocol<T.Args>
   @State var data : Data = Data()
-  @State var controlState : ControlState = ControlState()
   @State var argArgs : [Shader.Argument] = []
+  var controlState : ControlState
   
   var location : Location = Location()
 
@@ -28,12 +28,14 @@ struct StitchWithArgs<T : ArgSetter > : View {
   var shaderType : ShaderType
   
   init(args : ArgProtocol<T.Args>, preview : Bool, name : String, // argSetter : T.Type,
-       shaderType : ShaderType, shaderFn: ShaderFunction) {
+       shaderType : ShaderType, shaderFn: ShaderFunction,
+       controlState : ControlState) {
     self.preview = preview
     self.name = name
     self.shaderFn = shaderFn
     self.shaderType = shaderType
     self.args = args
+    self.controlState = controlState
   }
   
   func getArgs() -> [Shader.Argument] {
@@ -59,62 +61,42 @@ struct StitchWithArgs<T : ArgSetter > : View {
       } else {
 
         AnyView ( VStack {
-
+          
           let myGesture = DragGesture(minimumDistance: 0, coordinateSpace: .local)
             .onChanged({
               self.location.pt = $0.location
             })
           
           var nn = args.background?.view ?? AnyView(Rectangle())
-
+          
           TimelineView(  .animation(minimumInterval: 0.01, paused: controlState.paused && !controlState.singleStep)   ) {@MainActor context in
             if let vv = args.background?.videoStream,
                let xx = vv.readBufferAsImage( controlState.elapsedTime /*   now()  */ /* - controlState.deadTime */ /* t */ ) {
               if let nnn = NSImage.init(ciImage: xx.oriented(.down)) {
                 let _ = nn = AnyView(Image.init(nsImage: nnn).resizable().scaledToFit())
+              }
             }
-            }
-
+            
             StillView(elapsedTime: controlState.elapsedTime, nn: nn,
                       location: location,
                       shaderType: shaderType, shaderFn: shaderFn, args: getArgs())
             .background(Color.black)
             .gesture(myGesture)
-
+            
             let _ = controlState.doStep()
           }.onChange(of: args.floatArgs, initial: true) {
             argArgs = getArgs()
           }.onChange(of: args.otherImage, initial: true) {
             argArgs = getArgs()
           }.onChange(of: args.background, initial: true) {
-//            print("background changed")
+            //      print("background changed")
           }
-
-
+          
+          
           .clipped()
-
-          ControlView(controlState: $controlState)
-            .onChange(of: controlState.singleStep) { ov, nv in
-              if nv {
-                if let v = args.background?.videoStream,
-                   let vv = v as? VideoSupport {
-                  Task {
-                    await vv.seekForward(by: 1/10.0)
-                  }
-                }
-              }
-            }
-}
-            .onChange(of: controlState.paused, initial: true) { ov, nv in
-              if nv { // paused
-                  // FIXME: make startVideo / stopVideo methods on protocol Backgroundable
-                  args.background?.videoStream?.stopVideo()
-              } else {
-                  args.background?.videoStream?.startVideo()
-              }
-            
         }
-                  )
+          
+          )
 
 
 

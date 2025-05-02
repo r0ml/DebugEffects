@@ -10,7 +10,7 @@ import SwiftUI
   public let name: String
   public let shaderType: ShaderType
   public let shaderFn : ShaderFunction
-  public let background : BackgroundSpec?
+  public var background : BackgroundSpec?
   
   public var mdcache : MetalDelegate<T.Args>?
 
@@ -33,16 +33,64 @@ import SwiftUI
     registry[n] = self
   }
   
-  @MainActor public func getShaderView() -> AnyView {
-    return AnyView( ShaderView(shader: self) )
+  @MainActor public func getShaderView(debugFlag : Binding<Bool>) -> AnyView {
+    return AnyView( ShaderView(shader: self, debugFlag: debugFlag) )
   }
   
-  @MainActor func getMetalDelegate(_ args : ArgProtocol<T.Args> ) -> MetalDelegate<T.Args> {
+  @MainActor func getMetalDelegate(_ args : ArgProtocol<T.Args>, _ controlState : ControlState ) -> MetalDelegate<T.Args> {
     if let md = mdcache { return md }
     else {
+      
+// at this point, load the UserDefaults for background
+     
+// FIXME: this also happens in ArgProtocol -- sort it out and do it one place.
+      // this might be the right place, assuming that the StitchDefinition can be modified
+      // to include the stored UserDefaults upon creation
+      
+      let n = name
+      var bookmarkIsStale : Bool = false
+      if let bmx = UserDefaults.standard.data(forKey: "background.\(n)") {
+        let bm = bmx.dropFirst(2)
+        if bmx[0] == 2 || bmx[0] == 3,
+           // 2.
+           let resolvedUrl = try? URL(resolvingBookmarkData: bm,
+                                      options: [.withSecurityScope
+                                                //, withoutUI
+                                               ],
+                                      relativeTo: nil,
+                                      bookmarkDataIsStale: &bookmarkIsStale),
+           !bookmarkIsStale {
+          if resolvedUrl.startAccessingSecurityScopedResource() {
+            // FIXME: need to also create Webcam or Video or Color
+            if bmx[0] == 2,
+               let ni = NSImage(contentsOf: resolvedUrl) {
+              background = BackgroundSpec(ni)
+            } else if bmx[0] == 3 {
+              let nv = VideoSupport(url: resolvedUrl)
+              background = BackgroundSpec(nv)
+            } else {
+              background = BackgroundSpec(NSColor.systemMint.cgColor)
+            }
+          }
+        }
+      }
+      
+
+
+
+
+
       args.background = background
+      
+      
+      
+      
+      
+      
+      
       let md = MetalDelegate( name: name, type: shaderType, args: args
                               )
+      md.controlState = controlState
       mdcache = md
       md.beginShader()
       background?.videoStream?.startVideo()
@@ -60,7 +108,7 @@ import SwiftUI
     
 //    try? await Task.sleep(for: .milliseconds(50))
     let av = StitchWithArgs<T>(args: args, preview: true, name: name,
-                               shaderType: shaderType, shaderFn: shaderFn)
+                               shaderType: shaderType, shaderFn: shaderFn, controlState: ControlState() )
 
     return VStack {
       av

@@ -58,7 +58,7 @@ import os
   
   var args : ArgProtocol<T>
   
-  var controlState : Binding<ControlState>?
+  var controlState : ControlState?
   
   public func setVideoRecorder(_ m : MetalVideoRecorder?) {
     videoRecorder = m
@@ -103,7 +103,7 @@ import os
 
     //    await times.setTime(seconds)
     
-    controlState?.wrappedValue.paused = false
+//    controlState?.wrappedValue.paused = false
     
     guard size.width > 0 && size.height > 0 else { return NSImage() }
     return await draw(size: size, at: seconds)
@@ -179,9 +179,9 @@ import os
       self.saveImage(view)
     }
     
-    if controlState?.wrappedValue.paused == false || controlState?.wrappedValue.singleStep == true  { //  isRunningx || isSteppingx {
+    if controlState?.paused == false || controlState?.singleStep == true  { //  isRunningx || isSteppingx {
 
-      controlState?.wrappedValue.doStep()
+    controlState?.doStep()
         ddraw( view:  view)
     }
   }
@@ -558,7 +558,7 @@ extension MetalDelegate {
       
   //    let tim = Float(self.lastTime )
       
-      let tim =  Float( controlState?.wrappedValue.elapsedTime  ?? 0)
+      let tim =  Float( controlState?.elapsedTime  ?? 0)
       uniform.pointee.time = tim
       
       uniform.pointee.sinTime = sin(tim)

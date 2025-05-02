@@ -47,7 +47,7 @@ public class VideoSupport : VideoStream, Equatable, @unchecked Sendable {
   var loop : Bool = false
 
   deinit {
-    print("deinit videostream")
+//    print("deinit videostream")
     player.pause()
   }
 
@@ -104,13 +104,8 @@ public class VideoSupport : VideoStream, Equatable, @unchecked Sendable {
     }
   }
 
-  @MainActor public func pause() {
-    print("pause")
-    player.pause()
-  }
-  
   public func startVideo() {
-    print("start video")
+//    print("start video")
     let v = self.video
     
     if configured {
@@ -125,7 +120,7 @@ public class VideoSupport : VideoStream, Equatable, @unchecked Sendable {
   }
 
   public func stopVideo() {
-    print("stopVideo")
+//    print("stopVideo")
     player.pause()
   }
 
@@ -146,13 +141,18 @@ public class VideoSupport : VideoStream, Equatable, @unchecked Sendable {
 
   @MainActor private func getPixelsAsImage(_ currentTime : CMTime) -> CIImage? {
     var ot : CMTime = .zero
+//    player.pause()
+//    player.seek(to: currentTime) { n in print("done", n) }
+//    player.play()
+//    print("times:", currentTime.seconds, player.currentTime().seconds)
+    let oct = player.currentTime()
     if let pci = player.currentItem,
        let pivo = pci.outputs.first as? AVPlayerItemVideoOutput,
        
         // let ct = pivo.itemTime(forHostTime: currentTime),
         
-        pivo.hasNewPixelBuffer(forItemTime: currentTime),
-       let pixelBuffer = pivo.copyPixelBuffer(forItemTime: player.currentTime(), itemTimeForDisplay: &ot)  {
+        pivo.hasNewPixelBuffer(forItemTime: oct),
+       let pixelBuffer = pivo.copyPixelBuffer(forItemTime: oct, itemTimeForDisplay: &ot)  {
        // print(currentTime, ot)
       
       let ci = CIImage(cvPixelBuffer: pixelBuffer)
@@ -164,9 +164,10 @@ public class VideoSupport : VideoStream, Equatable, @unchecked Sendable {
   @MainActor func getPixelsAsTexture(_ currentTime : CMTime) -> MTLTexture? {
     let pivo = player.currentItem!.outputs[0] as! AVPlayerItemVideoOutput
     // let currentTime = pivo.itemTime(forHostTime: nextVSync)
-
-    if pivo.hasNewPixelBuffer(forItemTime: currentTime),
-       let pixelBuffer = pivo.copyPixelBuffer(forItemTime: currentTime, itemTimeForDisplay: nil)  {
+    let oct = currentTime
+    
+    if pivo.hasNewPixelBuffer(forItemTime: oct),
+       let pixelBuffer = pivo.copyPixelBuffer(forItemTime: oct, itemTimeForDisplay: nil)  {
 
       var vib = vImage_Buffer()
       var format = vImage_CGImageFormat(
@@ -234,7 +235,7 @@ public class VideoSupport : VideoStream, Equatable, @unchecked Sendable {
     //    player.seek(to: currentTime)
 
 //    print("nextVSync \(nextVSync)")
-    let cmt = CMTime(seconds: nextVSync, preferredTimescale: 1000000000)
+    let cmt = CMTime(seconds: nextVSync, preferredTimescale: 240)
 //    print("cmt \(cmt)")
     if let tx = getPixelsAsImage( cmt /* currentTime */ ) {
       //    self.myTexture = tx
