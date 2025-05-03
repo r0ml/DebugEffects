@@ -25,11 +25,8 @@ colorEffect(hypnotic02) {
 
   auto args = reinterpret_cast<device const struct Args *>(arg);
 
-  float t = time;
-  if (args->zoom) t=-t;
-
+  const float t = args->zoom ? -time : time;
   const float2 uv = position / size * nodeAspect(size);
-  
   const float2 m = nodeAspect(size) * mouse;
   
   float v = spiral(m-uv, t);
@@ -47,7 +44,7 @@ colorEffect(thingy2) {
     int sides;
   };
   
-  device const struct Args *args = reinterpret_cast< device const struct Args *>(arg);
+  auto args = reinterpret_cast< device const struct Args *>(arg);
   
   
   float2 uv = 3 * worldCoordAdjusted(position, size) / 2;
@@ -57,7 +54,6 @@ colorEffect(thingy2) {
     const float scaleFactor = float(i)+2.0;
     uv *= rot2d(time * scaleFactor * 0.01);
     
-    // polar transform
     const float scale = TAU/float(args->sides);
     const float theta = (floor( (atan2(uv.x, uv.y) + PI)/scale)+0.5)*scale;
     const float2 dir = float2(sin(theta), cos(theta));
@@ -71,12 +67,9 @@ colorEffect(thingy2) {
   
   fragColor *= 0.4;
   return opaque(fragColor);
-  
 }
 
 // =======================================================================================
-
-
 
 colorEffect(triangle) {
   struct Args {
@@ -85,14 +78,9 @@ colorEffect(triangle) {
     bool spin;
   };
 
-  device const struct Args *args = reinterpret_cast< device const struct Args *>(arg);
+  auto args = reinterpret_cast< device const struct Args *>(arg);
 
   const float2 uv=worldCoordAdjusted(position, size) * rot2d(args->spin * time) * 2;
-
-
- //  if (spin) {
- //   uv*=rot2d(time);
- // }
   const float rg = 2 * sqrt(3.0); // in.mul.y;
   const float2 p1 = rg * args->sizex * float2( +0.5, - 0.5 / sqrt(3.0) ); // right bottom
   const float2 p2 = rg * args->sizex * float2(  0, 1 / sqrt(3.0)); // top corner
@@ -115,8 +103,6 @@ colorEffect(triangle) {
   }
   return opaque(t);
 }
-
-
 
 // =================================================================
 
@@ -273,20 +259,13 @@ layerEffect(flip) {
 // =================================================================
 
 // FIXME: incorporate this into flip
-static float2 plane(float3 p, float3 d, float3 normal)
-{
-  float3 up = float3(0,1,0);
-  float3 right = cross(up, normal);
-  
-  float dn = dot(d, normal);
-  float pn = dot(p, normal);
-  
-  float3 hit = p - d / dn * pn;
-  
-  float2 uv;
-  uv.x = dot(hit, right);
-  uv.y = dot(hit, up);
-  
+static float2 plane(const float3 p, const float3 d, const float3 normal) {
+  const float3 up = float3(0,1,0);
+  const float3 right = cross(up, normal);
+  const float dn = dot(d, normal);
+  const float pn = dot(p, normal);
+  const float3 hit = p - d / dn * pn;
+  const float2 uv = float2( dot(hit, right), dot(hit, up) );
   return uv;
 }
 
@@ -304,49 +283,46 @@ layerEffect(flip02) {
   alpha += 1.0 - smoothstep(3.0, 4.0, timex);
   alpha = abs(mod(alpha, 2.0)-1.0);
 
-  float side = step(0.5, alpha);
+  const float side = step(0.5, alpha);
   
   alpha = radians(alpha*180.0);
-  float4 n = float4(cos(alpha),0,sin(alpha),-sin(alpha));
-  float3 d = float3(1.0,xy.y,xy.x);
-  float3 p = float3(-1.0+n.w/4.0,0,0);
-  float2 uv = plane(p, d, n.xyz);
-
-  uv += 0.5;
-  if (uv.x<0.0||uv.y<0.0||uv.x>1.0||uv.y>1.0)
-  {
+  const float4 n = float4(cos(alpha),0,sin(alpha),-sin(alpha));
+  const float3 d = float3(1.0,xy.y,xy.x);
+  const float3 p = float3(-1.0+n.w/4.0,0,0);
+  
+  const float2 uv = 0.5 + plane(p, d, n.xyz);
+  if (uv.x<0.0||uv.y<0.0||uv.x>1.0||uv.y>1.0) {
     return 0;
   }
 
-  float2 guv = grid*grid_width;
-
-  float2 c1c = guv + float2(1-uv.x,uv.y)*grid_width;
-  float2 c2c = guv + float2(uv.x, uv.y )*grid_width;
-  half4 c1 = layer.sample(size * c1c );
-  half4 c2 = tex.sample(sampler(), c2c ) ;
+  const float2 guv = grid*grid_width;
+  const float2 c1c = guv + float2(1-uv.x,uv.y)*grid_width;
+  const float2 c2c = guv + float2(uv.x, uv.y )*grid_width;
+  const half4 c1 = layer.sample(size * c1c );
+  const half4 c2 = tex.sample(sampler(), c2c ) ;
   return saturate(mix(c1, c2, side));
 }
 
 // =================================================================
 
 layerEffect(cartoon) {
-
-   struct Args {
-     int strength;
-     float bias;
-     float power;
-     float precision;
-     Color color;
-   };
-
+  
+  struct Args {
+    int strength;
+    float bias;
+    float power;
+    float precision;
+    Color color;
+  };
+  
   auto args = reinterpret_cast<const device Args *>(arg);
   
-  half4 p = gammaDecode(layer.sample(position));
-  half4 s = gammaDecode(layer.sample(position + 0.5));
-   float l = saturate(pow(length(p-s),half(args->power) ) * args->strength + args->bias);
-   p = floor( gammaEncode(p)*(args->precision+.999))/args->precision;
-   return mix(p, args->color.g, l);
- }
+  const half4 p2 = gammaDecode(layer.sample(position));
+  const half4 s = gammaDecode(layer.sample(position + 0.5));
+  const float l = saturate(pow(length(p2-s),half(args->power) ) * args->strength + args->bias);
+  const half4 p = floor( gammaEncode(p2)*(args->precision+.999))/args->precision;
+  return mix(p, args->color.g, l);
+}
 
 
  // =================================================================
@@ -365,31 +341,31 @@ layerEffect(sobel) {
     lengthx, lumina, graysc, edge_glow, dfdxx, fwidthx, test
   };
 
-   float3x3 sobelx =
+   const float3x3 sobelx =
    float3x3(-1.0, -2.0, -1.0,
             0.0,  0.0, 0.0,
             1.0,  2.0,  1.0);
-   float3x3 sobely =
+   const float3x3 sobely =
    float3x3(-1.0,  0.0,  1.0,
             -2.0,  0.0, 2.0,
             -1.0,  0.0,  1.0);
 
-   half3x3 YCoCr_mat = half3x3(1./4., 1./2., 1./4.,  -1./4., 1./2., -1./4.,   1./2., 0.0, -1./2. );
+   const half3x3 YCoCr_mat = half3x3(1./4., 1./2., 1./4.,  -1./4., 1./2., -1./4.,   1./2., 0.0, -1./2. );
 
    float2 sum = 0.0;
 
-  float2 uv = position / size;
-  float2 res = size;
-  half3 pix = layer.sample(size * uv).rgb;
+  const float2 uv = position / size;
+  const float2 res = size;
+  const half3 pix = layer.sample(size * uv).rgb;
 
   switch(args->variant) {
     case lengthx:
 
      for(int i = -1; i <= 1; i++) {
        for(int j = -1; j <= 1; j++) {
-         float2 xy = uv + float2(i,j) /res;
-         half3 clem = layer.sample(size * xy).xyz;
-         float val = length(clem);
+         const float2 xy = uv + float2(i,j) /res;
+         const half3 clem = layer.sample(size * xy).xyz;
+         const float val = length(clem);
          sum += val * float2(sobelx[1+i][1+j], sobely[1+i][1+j]);
        }
      }
@@ -397,9 +373,9 @@ layerEffect(sobel) {
     case lumina:
      for(int i = -1; i <= 1; i++) {
        for(int j = -1; j <= 1; j++) {
-         float2 xy = uv + float2(i,j) /res;
-         half3 clem = layer.sample(size * xy).xyz;
-         float val = pow(luminance(clem), 0.6);
+         const float2 xy = uv + float2(i,j) /res;
+         const half3 clem = layer.sample(size * xy).xyz;
+         const float val = pow(luminance(clem), 0.6);
          sum += val * float2(sobelx[1+i][1+j], sobely[1+i][1+j]);
        }
      }
@@ -407,45 +383,42 @@ layerEffect(sobel) {
     case graysc:
      for(int i = -1; i <= 1; i++) {
        for(int j = -1; j <= 1; j++) {
-         float2 xy = uv + float2(i,j) /res;
-         half3 clem = layer.sample(size * xy).xyz;
-         float val = grayscale(clem);
+         const float2 xy = uv + float2(i,j) /res;
+         const half3 clem = layer.sample(size * xy).xyz;
+         const float val = grayscale(clem);
          sum += val * float2(sobelx[1+i][1+j], sobely[1+i][1+j]);
        }
      }
       break;
     case edge_glow: {
-      float2 dd = (sin(time * 5.0)*0.5 + 1.5) ; // kernel offset
-      float2 pp = position ;
+      const float2 dd = (sin(time * 5.0)*0.5 + 1.5) ; // kernel offset
+      const float2 pp = position ;
       
-      // simple sobel edge detection
       float2 gxy = 0;
       
       for(int i = -1; i<2;i++) {
         for(int j = -1; j<2;j+=2) {
-          float gm = j * (2 - abs(i));
+          const float gm = j * (2 - abs(i));
           
-          gxy.x += luminance(gm * layer.sample(pp + float2(j, i) * dd).rgb);
+          gxy.x += luminance(gm * layer.sample( pp + float2(j, i) * dd).rgb);
           gxy.y += luminance(gm * layer.sample( pp + float2(i, j) * dd).rgb);
         }
       }
-      // hack: use g^2 to conceal noise in the texture
-      float g = dot(gxy, gxy);
-      float g2 = 0; // g * (sin(uni.iTime) / 2.0 + 0.5);
+      const float g = dot(gxy, gxy);
+      const float g2 = 0;
       
       half4 col = layer.sample(pp);
       col += half4(0.0, g, g2, 1.0);
       return col;
     }
     case dfdxx: {
-      float2 uv = position / size;
-      half4 colorx =  layer.sample(size * uv);
-      float grayx = length(colorx.rgb);
-      return opaque(half3(step(0.06,
-                               length(float2(dfdx(grayx), dfdy(grayx))))));
+      const float2 uv = position / size;
+      const half4 colorx =  layer.sample(size * uv);
+      const float grayx = length(colorx.rgb);
+      return opaque(half3(step(0.06, length(float2(dfdx(grayx), dfdy(grayx))))));
     }
     case fwidthx: {
-      half4 fragColor = fwidth(layer.sample(position))*15.;
+      const half4 fragColor = fwidth(layer.sample(position))*15.;
       return opaque(fragColor);
     }
     case test:
@@ -453,20 +426,20 @@ layerEffect(sobel) {
      float3x3 Co;
      float3x3 Cr;
 
-     float2 inv_res = 1. /res;
+     const float2 inv_res = 1. /res;
       float2 uv = position / size;
 
      for (int i=0; i<3; i++) {
        for (int j=0; j<3; j++) {
-         float2 pos = uv + (float2(i, j) - 1) * inv_res;
-         half3 temp = YCoCr_mat * layer.sample(size * pos).xyz;
+         const float2 pos = uv + (float2(i, j) - 1) * inv_res;
+         const half3 temp = YCoCr_mat * layer.sample(size * pos).xyz;
          Y[i][j] = temp.x;
          Co[i][j] = temp.y;
          Cr[i][j] = temp.z;
        }
      }
 
-     float3 xyz = float3(length(float2(dot(sobelx[0], Y[0]) + dot(sobelx[1], Y[1]) + dot(sobelx[2], Y[2]),
+     const float3 xyz = float3(length(float2(dot(sobelx[0], Y[0]) + dot(sobelx[1], Y[1]) + dot(sobelx[2], Y[2]),
                                        dot(sobely[0], Y[0]) + dot(sobely[1], Y[1]) + dot(sobely[2], Y[2]))),
                          length(float2(dot(sobelx[0], Co[0]) + dot(sobelx[1], Co[1]) + dot(sobelx[2], Co[2]),
                                        dot(sobely[0], Co[0]) + dot(sobely[1], Co[1]) + dot(sobely[2], Co[2]))),
@@ -477,11 +450,10 @@ layerEffect(sobel) {
    }
 
 
-   float ls = length(sum);
-   half3 mm = half3( step(args->threshold, ls) * ls);
-   half3 mx = mm * (args->image ? pix : 1);
+   const float ls = length(sum);
+   const half3 mm = half3( step(args->threshold, ls) * ls);
+   const half3 mx = mm * (args->image ? pix : 1);
    return opaque( mx);
-   // return float4( float3( step(0.4, ls) * ls), 1);
  }
 
 
