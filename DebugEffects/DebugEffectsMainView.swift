@@ -4,7 +4,7 @@
 import DebugEffectsFramework
 
 
-struct SwiftUIMetalMainView: View {
+struct DebugEffectsMainView: View {
   @State var selectedLib : String? = UserDefaults.standard.string(forKey: "selectedLib")
   @State var selectedShader : String? = UserDefaults.standard.string(forKey: "selectedShader")
   @State var rescroll : Int = 0
@@ -15,6 +15,9 @@ struct SwiftUIMetalMainView: View {
   var shaders: [String : Manifest ] = [
     "Simple" : SimpleManifest(),
     "Background" : BackgroundManifest(),
+    "SimpleLayers" : SimpleLayersManifest(),
+    "SimpleDistortion" : SimpleDistortionManifest(),
+    "SimpleArgs" : SimpleArgsManifest(),
   ]
   
   @AppStorage("searchText") var searchText : String = ""
@@ -34,6 +37,8 @@ struct SwiftUIMetalMainView: View {
   }
   
   var body: some View {
+    let _ = Self._printChanges()
+    
     return NavigationSplitView(columnVisibility: .constant(.all) ) {
       XSidebarView(selectedLib: $selectedLib, extensions: filteredShaders)
         .onChange(of: selectedLib, initial: false) {

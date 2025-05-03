@@ -18,7 +18,7 @@ public protocol AnyArgProtocol {
 //  init()
   public var floatArgs : TFloatArgs
   public var otherImage : NSImage?
-  public var name : String
+  public let name : String
   public var background : BackgroundSpec? // = BackgroundSpec(NSColor.systemMint.cgColor) // the background image -- could be a color or video?
   
   @MainActor init(_ n : String) {

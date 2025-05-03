@@ -8,7 +8,7 @@ import AVFoundation
 public struct SimpleManifest : Manifest {
   
   public var registered = [String:any AnyStitchDefinition]()
-  public var libnam = "Simple"
+  public var libnam = "SimpleColors"
   
   /// Dictionary with section names as keys and array of scene views as values
   @MainActor public init() {

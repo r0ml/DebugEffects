@@ -6,7 +6,7 @@ import UniformTypeIdentifiers
 
 public struct ShaderView<T : ArgSetter> : View, Sendable {
   var shader : StitchDefinition<T>
-  var args : ArgProtocol<T.Args>
+  @State var args : ArgProtocol<T.Args>
 
   @Binding var debugFlag : Bool
   @State var saveImage : Bool = false

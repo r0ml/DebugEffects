@@ -7,7 +7,7 @@ import SwiftUI
 struct SwiftUIMetalApp: App {
     var body: some Scene {
           WindowGroup {
-            SwiftUIMetalMainView().navigationTitle("SwiftUIMetal Window")
+            DebugEffectsMainView().navigationTitle("SwiftUIMetal Window")
           }
     }
 }

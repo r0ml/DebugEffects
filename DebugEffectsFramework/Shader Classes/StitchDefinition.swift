@@ -14,6 +14,12 @@ import SwiftUI
   
   public var mdcache : MetalDelegate<T.Args>?
 
+  
+  
+  public convenience init(_ n : String, _ t : ShaderType, background: String) {
+    self.init(n, t, background: BackgroundSpec(NSImage(named: background)!))
+  }
+  
   public init(_ n : String, _ t : ShaderType, background: BackgroundSpec? = nil
   ) {
     name = n
