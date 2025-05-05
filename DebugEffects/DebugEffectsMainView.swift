@@ -18,6 +18,7 @@ struct DebugEffectsMainView: View {
     "SimpleLayers" : SimpleLayersManifest(),
     "SimpleDistortion" : SimpleDistortionManifest(),
     "SimpleArgs" : SimpleArgsManifest(),
+    "ImageArg" : ImageArgManifest(),
   ]
   
   @AppStorage("searchText") var searchText : String = ""

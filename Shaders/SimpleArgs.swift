@@ -15,8 +15,6 @@ public struct SimpleArgsManifest : Manifest {
     register(StitchDefinition<Thingy2>("thingy2", .color))
     register(StitchDefinition<Triangle>("triangle", .color))
     register(StitchDefinition<SimpleEffect>("simpleEffect", .color, background: "london_tower"))
-    register(StitchDefinition<Alpha>("alphax", .layer, background: "london_tower"))
-    register(StitchDefinition<Flip>("flip", .layer, background: "london_tower"))
     register(StitchDefinition<Cartoon>("cartoon", .layer, background: "london_tower"))
     register(StitchDefinition<Sobel>("sobel", .layer, background: "london_tower"))
   }
@@ -113,79 +111,6 @@ public struct SimpleArgsManifest : Manifest {
   // =========================
 
   
-  
-  // I need to add:
-  // a) setting the background (color or image or video or webcam)
-  // b) setting the "image" arg (image or video or webcam)
-
-  struct Alpha : ArgSetter {
-    
-    struct Args : Instantiatable {
-      var radius : Float = 0.3
-      var blur : Float = 0.5
-      var compositing = true
-      //    var clem : Float = 33
-    }
-
-    @Bindable var args : ArgProtocol<Args>
-
-    @State var color : Color = Color.mint
-    
-    
-     @Environment(\.self) var environment
-    
-    
-    public init(args v : ArgProtocol<Args>, ) {
-      self._args = Bindable(v)
-    }
-    
-//    public init(args v : Bindable<ArgProtocol<Args>>) {
-//      _args = v
-//    }
-    
-    var body : some View {
-      VStack {
-        Toggle("Compositing", isOn: $args.floatArgs.compositing)
-        Slider(value: $args.floatArgs.radius, in: 0.1...0.9) { Text("Radius") }
-        Slider(value: $args.floatArgs.blur, in: 0.1...1) { Text("Blur") }
-        //      HStack {
-        //        Image.init(importing: url)
-        //      }
-
-
-        ColorPicker.init("Background color", selection: $color).onChange(of: color, initial: true) {
-          let cr = color.resolve(in: environment )
-          args.background = BackgroundSpec(cr.cgColor)
-          //        UserDefaults.default.set( cr.cgColor.components?, forKey: "background.\(self.name)")
-          
-        }
-        JustImage(args: args)
-
-      }
-    }
-  }
-
-  // =========================
-
-
-  struct Flip : ArgSetter {
-    struct Args : Instantiatable {
-      var slices : Int32 = 10
-      var rspeed : Float = 30
-    }
-    
-    @Bindable var args : ArgProtocol<Args>
-    
-    var body : some View {
-      VStack {
-        Slider(value: .convert(from: $args.floatArgs.slices), in: 3...20, step: 1) { Text("Slices") }
-        Slider(value: $args.floatArgs.rspeed, in: 1...10) { Text("Melt speed") }
-        JustImage(args: args)
-      }
-    }
-  }
-
-  // ==================
   
   struct Cartoon : ArgSetter {
 

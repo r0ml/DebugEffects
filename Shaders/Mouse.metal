@@ -15,7 +15,6 @@ colorEffect(vignette03) {
   return opaque( col * ( boost - vignette * reduction) );
 }
 
-
 // =================================================================
 
 colorEffect(vignette04) {

@@ -29,12 +29,22 @@ colorEffect(hypnotic02) {
   const float2 uv = position / size * nodeAspect(size);
   const float2 m = nodeAspect(size) * mouse;
   
-  float v = spiral(m-uv, t);
-  if (args->dble) {
-    v += (1.-v)*spiral( 0.5 * nodeAspect(size) - uv, t);
-  }
+  const float2 mm = m-uv;
+  const float r = length(mm);
+  const float a = atan2(mm.y, mm.x);
   
-  return opaque(v);
+  const float v = saturate(sin(100 * (sqrt(r) - 0.02 * a - 0.3 * t)));
+  
+  if (args->dble) {
+    const float2 mmm = 0.5 * nodeAspect(size) - uv;
+    const float rr = length(mmm);
+    const float aa = atan2(mmm.y, mmm.x);
+    
+    const float vv = saturate(sin(100 * (sqrt(r) - 0.02 * a - 0.3 * t)));
+    return opaque(v + vv);
+  } else {
+    return opaque(v);
+  }
 }
 
 // =================================================================
@@ -106,125 +116,70 @@ colorEffect(triangle) {
 
 // =================================================================
 
-static  float randx( float2 co ){
-  return rand(co) * 0.5 - 0.25;
-}
-
-static half3 noise( const half3 color, float2 uv, float level ) {
-  return max(min(color + half3(randx(uv) * level), 1), 0);
-}
-
-static half3 sepia( const half3 color, float adjust ) {
-  float cr = min(1.0, (color.r * (1.0 - (0.607 * adjust))) + (color.g * (0.769 * adjust)) + (color.b * (0.189 * adjust)));
-  float cg = min(1.0, (color.r * (0.349 * adjust)) + (color.g * (1.0 - (0.314 * adjust))) + (color.b * (0.168 * adjust)));
-  float cb = min(1.0, (color.r * (0.272 * adjust)) + (color.g * (0.534 * adjust)) + (color.b * (1.0 - (0.869 * adjust))));
-  return half3(cr, cg, cb);
-}
-
-static half3 vignette( half3 color, float2 uv, float adjust ) {
-  return color - max((distance(uv, 0.5) - 0.25) * 1.25 * adjust, 0.0);
-}
-
-static half3 channels( const half3 color, half3 channels , float adjust ) {
-  if ( all(channels == half3(0)) ) return color;
-  half3 clr = color;
-  if (channels.r != 0.0) {
-    if (channels.r > 0.0) {
-      clr.r += (1.0 - clr.r) * channels.r; }
-    else {
-      clr.r += clr.r * channels.r; }
-  }
-  if (channels.g != 0.0) {
-    if (channels.g > 0.0) {
-      clr.g += (1.0 - clr.g) * channels.g; }
-    else {
-      clr.g += clr.g * channels.g; }
-  }
-  if (channels.b != 0.0) {
-    if (channels.b > 0.0)  {
-      clr.b += (1.0 - clr.b) * channels.b; }
-    else {
-      clr.b += clr.b * channels.b; }
-  }
-  return clr;
-}
-
 colorEffect(simpleEffect) {
   struct Args {
     char effect;
   };
   
-  device const struct Args *args = reinterpret_cast< device const struct Args *>(arg);
+  auto args = reinterpret_cast< device const struct Args *>(arg);
   
-  float2 uv = position / size;
-  half3 col = currentColor.rgb;
+  const float2 uv = position / size;
+  const half3 col = currentColor.rgb;
 
   switch( args->effect ) {
     case 0: return opaque(half3(grayscale(col)));
     case 1: return opaque( (col - 0.5) * 2 + 0.5); // contrast
     case 2: return opaque( 1 - col); // invert
-    case 3: return opaque(noise(col, uv, 0.5));
-    case 4: return opaque(sepia(col, 0.75));
-    case 5: return opaque(vignette(col, uv, 1.0));
-    case 6: return opaque(channels(col, half3(0.2, -0.4, -0.05) , 0.0));
+    case 3: { // noise
+      const float level = 0.5;
+      const float r = rand(uv) * 0.5 - 0.25;
+      return opaque(max(min(col + half3(r * level), 1), 0));
+    }
+      
+    case 4: { // sepia
+      float adjust = 0.75;
+      float cr = min(1.0, (col.r * (1.0 - (0.607 * adjust))) + (col.g * (0.769 * adjust)) + (col.b * (0.189 * adjust)));
+      float cg = min(1.0, (col.r * (0.349 * adjust)) + (col.g * (1.0 - (0.314 * adjust))) + (col.b * (0.168 * adjust)));
+      float cb = min(1.0, (col.r * (0.272 * adjust)) + (col.g * (0.534 * adjust)) + (col.b * (1.0 - (0.869 * adjust))));
+      return opaque(half3(cr, cg, cb));
+    }
+      
+    case 5: // vignette
+    {
+      const float adjust = 1;
+      return opaque(col - max((distance(uv, 0.5) - 0.25) * 1.25 * adjust, 0.0));
+    }
+      
+    case 6: // channels
+    {
+      half3 channels = half3(0.2, -0.4, -0.05);
+      if ( all(channels == half3(0)) ) { return opaque(col); }
+      half3 clr = col;
+      if (channels.r != 0.0) {
+        if (channels.r > 0.0) {
+          clr.r += (1.0 - clr.r) * channels.r; }
+        else {
+          clr.r += clr.r * channels.r; }
+      }
+      if (channels.g != 0.0) {
+        if (channels.g > 0.0) {
+          clr.g += (1.0 - clr.g) * channels.g; }
+        else {
+          clr.g += clr.g * channels.g; }
+      }
+      if (channels.b != 0.0) {
+        if (channels.b > 0.0)  {
+          clr.b += (1.0 - clr.b) * channels.b; }
+        else {
+          clr.b += clr.b * channels.b; }
+      }
+      return opaque(clr);
+    }
     default: return half4(0.3, 0.4, 0.5, 0.6);
   }
 }
 
 // ================================================
-
-class alphax {
-public:
-  
-  //set frame setup
-  float2 frame(float2 u, float2 r) {
-    return ( (u-.5) * r)/r.y;
-  }
-  
-  // static float4 aOverB(float4 a,float4 b) {
-  //   a.xyz*=a.w;
-  //   b.xyz*=b.w;
-  //   return float4(a+b*(1.-a));
-  // }
-  
-  //not sure if correct, but looks useful.
-  half4 aXorB(half4 a, half4 b) {
-    a.xyz*=a.w;
-    b.xyz*=b.w;
-    return half4(a*(1.-b)+b*(1.-a));
-  }
-};
-
-layerEffect(alphax) {
-  class alphax shad;
-  
-  struct Args {
-   float radius;
-   float blur;
-   bool compositing;
- };
-
-  auto args = reinterpret_cast<const device Args *>(arg);
-  
-  float2 u = position / size;
-  float2 m = mouse;
-  float a = length(m-u);
-  a=smoothstep(args->blur, -args->blur, a-args->radius);
-  
-  float b=length(m-u);
-  b=smoothstep(args->blur, -args->blur, b-args->radius);
-
-  if (! args->compositing) {
-    return half4(a,0,b,1);//2 color channels are set by mouse positions.
-  } else {
-    half4 a4 = half4( layer.sample(size * u).xyz, a);//colors are set by
-    half4 b4 = half4( tex.sample(sampler(), u).xyz, b);//alpha channels are set by distance to mouse positions.
-    return opaque(shad.aXorB(a4, b4).rgb);
-  }
-
-}
-
-// =================================================================
 
 
 layerEffect(flip) {
@@ -258,52 +213,6 @@ layerEffect(flip) {
 
 // =================================================================
 
-// FIXME: incorporate this into flip
-static float2 plane(const float3 p, const float3 d, const float3 normal) {
-  const float3 up = float3(0,1,0);
-  const float3 right = cross(up, normal);
-  const float dn = dot(d, normal);
-  const float pn = dot(p, normal);
-  const float3 hit = p - d / dn * pn;
-  const float2 uv = float2( dot(hit, right), dot(hit, up) );
-  return uv;
-}
-
-layerEffect(flip02) {
-  const float grid_width = 0.1;
-  const float2 tc = position / size;
-  float2 xy = tc / grid_width;
-  const float2 grid = floor(xy);
-  xy = mod(xy, 1.0) - 0.5;
-  
-  float alpha = 0.0;//uni.iMouse.x / uni.iResolution.x;
-  float timex = time - (grid.y - grid.x)*0.1;
-  timex = mod(timex, 6.0);
-  alpha += smoothstep(0.0, 1.0, timex);
-  alpha += 1.0 - smoothstep(3.0, 4.0, timex);
-  alpha = abs(mod(alpha, 2.0)-1.0);
-
-  const float side = step(0.5, alpha);
-  
-  alpha = radians(alpha*180.0);
-  const float4 n = float4(cos(alpha),0,sin(alpha),-sin(alpha));
-  const float3 d = float3(1.0,xy.y,xy.x);
-  const float3 p = float3(-1.0+n.w/4.0,0,0);
-  
-  const float2 uv = 0.5 + plane(p, d, n.xyz);
-  if (uv.x<0.0||uv.y<0.0||uv.x>1.0||uv.y>1.0) {
-    return 0;
-  }
-
-  const float2 guv = grid*grid_width;
-  const float2 c1c = guv + float2(1-uv.x,uv.y)*grid_width;
-  const float2 c2c = guv + float2(uv.x, uv.y )*grid_width;
-  const half4 c1 = layer.sample(size * c1c );
-  const half4 c2 = tex.sample(sampler(), c2c ) ;
-  return saturate(mix(c1, c2, side));
-}
-
-// =================================================================
 
 layerEffect(cartoon) {
   
@@ -406,9 +315,7 @@ layerEffect(sobel) {
       }
       const float g = dot(gxy, gxy);
       const float g2 = 0;
-      
-      half4 col = layer.sample(pp);
-      col += half4(0.0, g, g2, 1.0);
+      const half4 col = layer.sample(pp) + half4(0.0, g, g2, 1.0);
       return col;
     }
     case dfdxx: {

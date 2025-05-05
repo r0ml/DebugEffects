@@ -151,17 +151,13 @@ layerEffect(isovalues) {
   return opaque(fragColor * ( 1 - smoothstep(0 , 1, 0.5*abs(v)/fwidth(v))));
 }
 
-
 // =================================================================
 
 layerEffect(vhs02) {
   const float2 uv = position / size;
-  
-  // Jitter each line left and right
   const float2 samplePosition = uv + float2(
                                             (rand(float2(time, position.y))-0.5)/64.0,
                                             (rand(float2(time))-0.5)/32.0);
-  // Slightly add color noise to each line
   const half4 texColor = (-0.5 +
                          half4(
                                rand(float2(position.y, time)),
@@ -205,16 +201,14 @@ layerEffect(postProcess) {
   return opaque(col);
 }
 
-
 // =================================================================
 
 layerEffect(deform02) {
-  const float2 uv2 = worldCoordAdjusted(position, size);
   const float2 uv = float2(uv.x, abs(uv.y));
-  return layer.sample(size * fract(float2((uv.x/uv.y)+(sin(time * PI * 0.25) * 2),
-                             (1 / uv.y)+(cos(time * PI * 0.3) * 2)))) * uv.y;
+  const float st = sin(time * PI * 0.25) * 2;
+  const float ct = cos(time * PI * 0.3) * 2;
+  return layer.sample(size * fract(float2((uv.x/uv.y)+st, (1 / uv.y) + ct))) * uv.y;
 }
-
 
 // =================================================================
 

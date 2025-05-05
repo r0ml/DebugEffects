@@ -14,12 +14,9 @@ public struct SimpleLayersManifest : Manifest {
   @MainActor public init() {
 
     for i in [
-      "lights03", "rain06", "rosace21",
-      "water92", "aberration02", "isovalues",
-      "vhs02", "postProcess",
-      "deform02", "laplace", "infinite", "sliced",
-      "tunnel92", "water93",
-      "blackHole", "vhsfilter", "pressure",
+      "lights03", "rain06", "rosace21", "water92", "aberration02", "isovalues",
+      "vhs02", "postProcess", "deform02", "laplace", "infinite", "sliced",
+      "tunnel92", "water93", "blackHole", "vhsfilter", "pressure",
     ] {
       self.register(StitchDefinition<NoArgs>(i, .layer, background: BackgroundSpec(NSImage(named: "london_tower")!)))
     }
