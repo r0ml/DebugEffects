@@ -14,15 +14,12 @@ public protocol AnyArgProtocol {
 }
 
 @Observable public class ArgProtocol<TFloatArgs : Instantiatable> {
-//  associatedtype FloatArgs : Equatable
-//  init()
   public var floatArgs : TFloatArgs
   public var otherImage : NSImage?
-  public let name : String
-  public var background : BackgroundSpec? // = BackgroundSpec(NSColor.systemMint.cgColor) // the background image -- could be a color or video?
+  public var name : String
+  public var background : BackgroundSpec?
   
   @MainActor init(_ n : String) {
-//    self.init()
     name = n
     floatArgs = TFloatArgs.init()
     if let d = UserDefaults.standard.data(forKey: "settings.\(n)") {
@@ -79,17 +76,6 @@ public protocol AnyArgProtocol {
       let nv = VideoSupport(url: url)
     background = BackgroundSpec(nv)
   }
-  
-  /*
-  init(_ d : Data) {
-//    var dx = Self()
-    // FIXME: make sure that the number of bytes copied is the same as the buffer size
-    self.init()
-    _ = withUnsafeMutableBytes(of: &floatArgs) {
-      d.copyBytes(to: $0)
-    }
-  }
-*/
 }
 
 extension ArgProtocol {
@@ -98,8 +84,6 @@ extension ArgProtocol {
       return Data(bytes: $0, count: MemoryLayout.size(ofValue: floatArgs))
     }
   }
-  
-  
 }
 
 @MainActor public protocol ArgSetter : View {
@@ -107,7 +91,6 @@ extension ArgProtocol {
   var args : ArgProtocol<Args> { get }
   init(args : ArgProtocol<Args>)
 }
-
 
 public struct EmptyStruct : Instantiatable {
   var dummy : Int = 0
@@ -151,7 +134,6 @@ public struct JustImage<T : Instantiatable> : ArgSetter {
         .onDrop(of: [.fileURL, .image, .video, .movie], isTargeted: $hovering, perform: doDrop )
       BackgroundableView(args.name, args: $args.background)
     }
-
   }
 
   func doDrop(_ p : [NSItemProvider] ) -> Bool {

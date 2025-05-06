@@ -19,9 +19,11 @@ public struct ShaderView<T : ArgSetter> : View, Sendable {
     let aa = (ArgProtocol<T.Args>).init(shader.name)
     if aa.background == nil {
       aa.background = shader.background
-    } else {
-//      print("background video?")
     }
+    if aa.otherImage == nil {
+      aa.otherImage = shader.imageArg
+    }
+    
     self.args = aa
     self._debugFlag = debugFlag
   }
@@ -37,13 +39,12 @@ public struct ShaderView<T : ArgSetter> : View, Sendable {
   
   public var body : some View {
     //    let _ = Self._printChanges()
-    // here is either a MetalView or an ExtensionView
     VStack {
       if debugFlag {
          AnyView(MetalWithArgs<T>(metalDelegate: shader.getMetalDelegate(args, controlState) ))
       } else {
         AnyView(
-          StitchWithArgs<T>(args: args, preview: false, name: shader.name, shaderType: shader.shaderType, shaderFn: shader.shaderFn, controlState: controlState)
+          StitchWithArgs(args: args, preview: false, name: shader.name, shaderType: shader.shaderType, shaderFn: shader.shaderFn, controlState: controlState)
         )
       }
       

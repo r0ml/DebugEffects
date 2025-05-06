@@ -11,16 +11,16 @@ public struct ImageArgManifest : Manifest {
   public var registered = [String:any AnyStitchDefinition]()
   
   @MainActor public init() {
-    register(StitchDefinition<Alpha>("alphax", .layer, background: "london_tower"))
-    register(StitchDefinition<Flip>("flip02", .layer, background: "london_tower"))
+    register(StitchDefinition<Alpha>("alphax", .layer, background: "london_tower", imageArg: "london_wheel"))
+    register(StitchDefinition<Flip>("flip02", .layer, background: "london_tower", imageArg: "london_wheel"))
     
-    register(StitchDefinition<JustImage<EmptyStruct>>("burning", .color, background: "london_tower") )
-    register(StitchDefinition<JustImage<EmptyStruct>>("fade", .color, background: "london_tower") )
-    register(StitchDefinition<NoiseFade>("noiseFade", .color, background: "london_tower") )
-    register(StitchDefinition<JustImage<EmptyStruct>>("cube92", .layer, background: "london_tower") )
-    register(StitchDefinition<JustImage<EmptyStruct>>("swap", .layer, background: "london_tower") )
-    register(StitchDefinition<Kaleidoscope03>("kaleidoscope03", .layer, background: "london_tower") )
-    register(StitchDefinition<Filter93>("filter93", .layer, background: "london_tower") )
+    register(StitchDefinition<JustImage<EmptyStruct>>("burning", .color, background: "london_tower", imageArg: "london_wheel") )
+    register(StitchDefinition<JustImage<EmptyStruct>>("fade", .color, background: "london_tower", imageArg: "london_wheel") )
+    register(StitchDefinition<NoiseFade>("noiseFade", .color, background: "london_tower", imageArg: "london_wheel") )
+    register(StitchDefinition<JustImage<EmptyStruct>>("cube92", .layer, background: "london_tower", imageArg: "london_wheel") )
+    register(StitchDefinition<JustImage<EmptyStruct>>("swap", .layer, background: "london_tower", imageArg: "london_wheel") )
+    register(StitchDefinition<Kaleidoscope03>("kaleidoscope03", .layer, background: "london_tower", imageArg: "london_wheel") )
+    register(StitchDefinition<Filter93>("filter93", .layer, background: "london_tower", imageArg: "london_wheel") )
   }
   
   
@@ -30,48 +30,32 @@ public struct ImageArgManifest : Manifest {
   // b) setting the "image" arg (image or video or webcam)
   
   struct Alpha : ArgSetter {
-    
     struct Args : Instantiatable {
       var radius : Float = 0.3
       var blur : Float = 0.5
       var compositing = true
-      //    var clem : Float = 33
     }
     
     @Bindable var args : ArgProtocol<Args>
     
     @State var color : Color = Color.mint
-    
-    
     @Environment(\.self) var environment
     
-    
-    public init(args v : ArgProtocol<Args>, ) {
+    public init(args v : ArgProtocol<Args>, /* image: NSImage? = nil */) {
       self._args = Bindable(v)
     }
-    
-    //    public init(args v : Bindable<ArgProtocol<Args>>) {
-    //      _args = v
-    //    }
     
     var body : some View {
       VStack {
         Toggle("Compositing", isOn: $args.floatArgs.compositing)
         Slider(value: $args.floatArgs.radius, in: 0.1...0.9) { Text("Radius") }
         Slider(value: $args.floatArgs.blur, in: 0.1...1) { Text("Blur") }
-        //      HStack {
-        //        Image.init(importing: url)
-        //      }
-        
         
         ColorPicker.init("Background color", selection: $color).onChange(of: color, initial: true) {
           let cr = color.resolve(in: environment )
           args.background = BackgroundSpec(cr.cgColor)
-          //        UserDefaults.default.set( cr.cgColor.components?, forKey: "background.\(self.name)")
-          
         }
         JustImage(args: args)
-        
       }
     }
   }
@@ -165,14 +149,15 @@ public struct ImageArgManifest : Manifest {
 
     @Bindable var args : ArgProtocol<Args>
 
-    init(args: ArgProtocol<Args>) {
-      self.args = args
+/*    init(args: ArgProtocol<Args>) {
+      self._args = Bindable(args)
       args.otherImage = NSImage(named: "london_wheel")
     }
+  */
     
     var body : some View {
       VStack {
-        Slider(value: $args.floatArgs.speed, in: 0.1...1) { Text("Speed \($args.floatArgs.speed)")}
+        Slider(value: $args.floatArgs.speed, in: 0.1...1) { Text("Speed \(args.floatArgs.speed)")}
         JustImage(args: args)
       }
     }

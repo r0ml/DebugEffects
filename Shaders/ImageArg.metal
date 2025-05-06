@@ -155,83 +155,64 @@ colorEffect(noiseFade) {
 class cube92 {
 public:
   
+  const float persp = 0.7;
+  const float unzoom = 0.3;
+  const float reflection = 0.4;
+  const float floating = 3;
   
-  const float persp = .7;
-  const float unzoom = .3;
-  const float reflection = .4;
-  const float floating = 3.;
-  
-  float2 project (float2 p)
-  {
-    return p * float2(1, -1.2) + float2(0, -floating/100.);
+  float2 project (const float2 p) {
+    return p * float2(1, -1.2) + float2(0, -floating/100);
   }
   
-  bool inBounds (float2 p)
-  {
+  bool inBounds (const float2 p) {
     return all( float2(0) < p ) && all( p < float2(1));
   }
   
-  half4 bgColor (float2 p, float2 pfr, float2 pto, texture2d<half> vid0, texture2d<half> vid1)
-  {
+  half4 bgColor (const float2 p, const float2 pfrx, const float2 ptox,
+                 SwiftUI::Layer vid0, const float2 size, texture2d<half> vid1) {
     half4 c = half4(0, 0,  0, 1);
-    pfr = project(pfr);
-    if (inBounds(pfr))
-    {
-      c += mix(half4(0), vid0.sample(sampler(), pfr), reflection * mix(1., 0., pfr.y));
+    const float2 pfr = project(pfrx);
+    if (inBounds(pfr)) {
+      c += mix(half4(0), vid0.sample(size * yflip(pfr) ), reflection * mix(1, 0, pfr.y));
     }
-    pto = project(pto);
-    if (inBounds(pto))
-    {
-      c += mix(half4(0), vid1.sample(sampler(), pto), reflection * mix(1., 0., pto.y));
+    const float2 pto = project(ptox);
+    if (inBounds(pto)) {
+      c += mix(half4(0), vid1.sample(sampler(), yflip(pto) ), reflection * mix(1, 0, pto.y));
     }
     return c;
   }
   
-  // p : the position
-  // persp : the perspective in [ 0, 1 ]
-  // center : the xcenter in [0, 1] \ 0.5 excluded
-  float2 xskew (float2 p, float persp, float center)
-  {
-    float x = mix(p.x, 1.-p.x, center);
-    return (
-            (
-             float2( x, (p.y - .5*(1.-persp) * x) / (1.+(persp-1.)*x) )
-             - float2(0.5-abs(center-0.5), 0)
-             )
-            * float2(.5 / abs(center - 0.5 ) * (center<0.5 ? 1. : -1.), 1.)
-            + float2(center<0.5 ? 0. : 1., .0)
-            );
+  // p : the position, persp : the perspective in [0, 1], center : the xcenter in [0, 1] \ 0.5 excluded
+  float2 xskew (const float2 p, const float persp, const float center) {
+    const float x = mix(p.x, 1.-p.x, center);
+    const float2 z = float2( x, (p.y - 0.5*(1-persp) * x) / (1+(persp-1)*x) ) - float2(0.5-abs(center-0.5), 0);
+    return fma(z, float2(0.5 / abs(center - 0.5 ) * (center < 0.5 ? 1 : -1), 1), float2(center<0.5 ? 0 : 1, 0));
   }
 };
 
 layerEffect(cube92) {
   class cube92 shad;
-  float progress = mouse.x;
+  const float progress = 0.5 + sin(time / 2) * 0.5;
 
-  float2 op = position / size;
-  float uz = shad.unzoom * 2.0*(0.5-abs(0.5 - progress));
-  float2 p = -uz*0.5+(1.0+uz) * op;
-  float2 fromP = shad.xskew(
+  const float2 op = yflip(position / size);
+  const float uz = shad.unzoom * 2.0*(0.5-abs(0.5 - progress));
+  const float2 p = -uz*0.5+(1.0+uz) * op;
+  const float2 fromP = shad.xskew(
                        (p - float2(progress, 0.0)) / float2(1.0-progress, 1.0),
                        1.0-mix(progress, 0.0, shad.persp),
                        0.0
                        );
-  float2 toP = shad.xskew(
+  const float2 toP = shad.xskew(
                      p / float2(progress, 1.0),
                      mix(pow(progress, 2.0), 1.0, shad.persp),
                      1.0
                      );
-  if (shad.inBounds(fromP))
-  {
-    return layer.tex.sample(sampler(), fromP);
-  }
-  else if (shad.inBounds(toP))
-  {
-    return tex.sample(sampler(), toP);
-  }
-  else
-  {
-    return shad.bgColor(op, fromP, toP, layer.tex, tex);
+  if (shad.inBounds(fromP)) {
+    return layer.sample(size * yflip(fract(fromP)) );
+  } else if (shad.inBounds(toP)) {
+    return tex.sample(sampler(), yflip(toP));
+  } else {
+    return shad.bgColor(op, fromP, toP, layer, size, tex);
   }
 }
 
@@ -241,29 +222,29 @@ layerEffect(cube92) {
 class swap {
 public:
   
-  const float reflection = .4;
+  const float reflection = 0.4;
 
-  const half4 black = half4(0.0, 0.0, 0.0, 1.0);
-  const float2 boundMin = float2(0.0, 0.0);
-  const float2 boundMax = float2(1.0, 1.0);
+  const half4 black = half4(0, 0, 0, 1);
+  const float2 boundMin = 0;
+  const float2 boundMax = 1;
   
-  bool inBounds (float2 p) {
+  bool inBounds(const float2 p) {
     return all((boundMin < p)) && all((p < boundMax));
   }
   
-  float2 project (float2 p) {
-    return p * float2(1.0, -1.2) + float2(0.0, -0.02);
+  float2 project (const float2 p) {
+    return p * float2(1, -1.2) + float2(0, -0.02);
   }
   
-  half4 bgColor (float2 p, float2 pfr, float2 pto, texture2d<half> vid0, texture2d<half> vid1) {
+  half4 bgColor (const float2 p, const float2 pfrx, const float2 ptox, SwiftUI::Layer vid0, const float2 size, texture2d<half> vid1) {
     half4 c = black;
-    pfr = project(pfr);
+    const float2 pfr = project(pfrx);
     if (inBounds(pfr)) {
-      c += mix(black, vid0.sample(sampler(), pfr), reflection * mix(1.0, 0.0, pfr.y));
+      c += mix(black, vid0.sample(size * yflip(pfr) ), reflection * mix(1, 0, pfr.y));
     }
-    pto = project(pto);
+    const float2 pto = project(ptox);
     if (inBounds(pto)) {
-      c += mix(black, vid1.sample(sampler(), pto), reflection * mix(1.0, 0.0, pto.y));
+      c += mix(black, vid1.sample(sampler(), yflip(pto) ), reflection * mix(1, 0, pto.y));
     }
     return c;
   }
@@ -275,42 +256,41 @@ layerEffect(swap) {
   const float perspectivex = .2;
   const float depth = 3.;
 
-  const float progress = sin(time*.5)*.5+.5;
-  const float2 p = position / size;
-//  float progress = uni.iMouse.x;
+  const float progress = sin(time*0.5)*.5+0.5;
+  const float2 p = yflip(position / size);
 
-  float2 pfr, pto = float2(-1);
+  const float sizex = mix(1.0, depth, progress);
+  const float perspx = perspectivex * progress;
+  const float2 pfr = (p + float2(0, -0.5)) * float2(sizex/(1-perspectivex*progress), sizex/(1-sizex*perspx*p.x)) + float2(0, 0.5);
 
-  float sizex = mix(1.0, depth, progress);
-  float persp = perspectivex * progress;
-  pfr = (p + float2(-0.0, -0.5)) * float2(sizex/(1.0-perspectivex*progress), sizex/(1.0-sizex*persp*p.x)) + float2(0.0, 0.5);
+  const float sizey = mix(1, depth, 1-progress);
+  const float perspy = perspectivex * (1.-progress);
+  const float a1 = sizey/(1-perspectivex*(1-progress));
+  const float a2 = sizey/(1-sizey*perspy*(0.5-p.x));
+  const float2 pto = (p + float2(-1, -0.5)) * float2(a1, a2) + float2(1, 0.5);
 
-  sizex = mix(1.0, depth, 1.-progress);
-  persp = perspectivex * (1.-progress);
-  pto = (p + float2(-1.0, -0.5)) * float2(sizex/(1.0-perspectivex*(1.0-progress)), sizex/(1.0-sizex*persp*(0.5-p.x))) + float2(1.0, 0.5);
-
-  bool fromOver = progress < 0.5;
+  const bool fromOver = progress < 0.5;
 
   if (fromOver) {
     if (shad.inBounds(pfr)) {
-      return layer.tex.sample(sampler(), pfr);
+      return layer.sample(size * yflip(fract(pfr)));
     }
     else if (shad.inBounds(pto)) {
-      return tex.sample(sampler(), pto);
+      return tex.sample(sampler(), yflip(pto));
     }
     else {
-      return shad.bgColor(p, pfr, pto, layer.tex, tex);
+      return shad.bgColor(p, pfr, pto, layer, size, tex);
     }
   }
   else {
     if (shad.inBounds(pto)) {
-      return tex.sample(sampler(), pto);
+      return tex.sample(sampler(), yflip(pto) );
     }
     else if (shad.inBounds(pfr)) {
-      return layer.tex.sample(sampler(), pfr);
+      return layer.sample(size * yflip(pfr) );
     }
     else {
-      return shad.bgColor(p, pfr, pto, layer.tex, tex);
+      return shad.bgColor(p, pfr, pto, layer, size, tex);
     }
   }
 }
@@ -445,82 +425,73 @@ layerEffect(filter93) {
 
   auto args = reinterpret_cast<const device Args *>(arg);
   
-   float2 uv = position / size;
-   half3 ocol = layer.sample(position).rgb;
-   half3 col = ocol;
-   float t = time;
+   const float2 uv = position / size;
 
   switch(args->variant) {
     case barrel: {
-      float2 distortion_center = float2(0.5,0.5);
+      const float2 distortion_center = float2(0.5,0.5);
       
       //K1 < 0 is pincushion distortion
       //K1 >=0 is barrel distortion
-      float k1 = 1.0 * sin(t*0.5),
-      k2 = 0.5;
+      const float k1 = 1.0 * sin(time*0.5);
+      const float k2 = 0.5;
       
-      float2 rx = uv - distortion_center;
-      float rr = dot(rx,rx);
-      float r2 = sqrt(rr) * (1.0 + k1*rr + k2*rr*rr);
-      float theta = atan2(rx.x, rx.y);
-      float2 distortion = float2(sin(theta), cos(theta)) * r2;
-      float2 dest_uv = distortion + 0.5;
-      col = tex.sample( sampler(), dest_uv).rgb;
+      const float2 rx = uv - distortion_center;
+      const float rr = dot(rx,rx);
+      const float r2 = sqrt(rr) * (1.0 + k1*rr + k2*rr*rr);
+      const float theta = atan2(rx.x, rx.y);
+      const float2 distortion = float2(sin(theta), cos(theta)) * r2;
+      const float2 dest_uv = distortion + 0.5;
+      return layer.sample( size * dest_uv);
     }
       break;
     case bloating:
     {
-      float maxPower = 1.5; //Change this to change the grade of bloating that is applied to the image.
-      float2 bloatPos = 0; //The position at which the effect occurs
+      const float maxPower = 1.5; //Change this to change the grade of bloating that is applied to the image.
+      const float2 bloatPos = 0; //The position at which the effect occurs
       
-      float n = smoothstep(0.,1.,abs(1.-mod(t/2.,2.)));
-      float2 q = bloatPos+0.5;
-      float l = length(uv-q);
-      float2 p = uv - q;
+      const float n = smoothstep(0.,1.,abs(1.-mod(time/2.,2.)));
+      const float2 q = bloatPos+0.5;
+      const float l2 = length(uv-q);
+      const float2 p = uv - q;
       
-      float a1 = acos(clamp(dot(normalize(p),float2(1,0)),-1.,1.));
-      if (p.y < 0) a1 = -a1;
-      if (length(p) == 0) a1 = 0;
-      
-      l = pow(l,1.+n*(maxPower-1.));
-      float2 uv2 = l*float2(cos(a1),sin(a1))+q;
-      col = tex.sample(sampler(), uv2).rgb;
+      const float a1 = acos(clamp(dot(normalize(p),float2(1,0)),-1.0, 1.0)) * (p.y < 0 ? -1 : 1) * (length(p) != 0);
+      const float l = pow(l2, 1+n*(maxPower-1));
+      const float2 uv2 = l*float2(cos(a1),sin(a1))+q;
+      return layer.sample(size * uv2);
     }
       break;
-    case box:
-      col = 0;
+    case box: {
+      half3 col = 0;
       
       for(int i = 0; i < 3; i++){
         for(int j = 0; j < 3; j++){
-          float2 realRes = float2(i - 1, j - 1) / size * 2;
-          half3 x = layer.sample( size * (uv + realRes) ).rgb ;
-          col += pow(x, 2.2);
+          const float2 realRes = float2(i - 1, j - 1) / size * 2;
+          const half3 x = layer.sample( size * (uv + realRes) ).rgb ;
+          col += gammaDecode(x);
         }
       }
-      col = gammaEncode(col / 9);
+      return opaque(gammaEncode(col / 9));
+    }
       break;
     case grayscalex: {
-      float boost = 1.5;
-      float reduction = 4.0;
-      //float boost = uni.iMouse.x < 0.01 ? 1.5 : uni.iMouse.x / uni.iResolution.x * 2.0;
-      //float reduction = uni.iMouse.y < 0.01 ? 2.0 : uni.iMouse.y / uni.iResolution.y * 4.0;
-      
-      half3 col = layer.sample(size * uv).rgb;
-      float vignette = distance( 0.5, uv );
-      half3 grey = grayscale(col);
-      col = mix(grey, col, saturate(boost - vignette * reduction));
+      const float boost = 1.5;
+      const float reduction = 4.0;
+      const half3 col = layer.sample(size * uv).rgb;
+      const float vignette = distance( 0.5, uv );
+      const half3 grey = grayscale(col);
+      return opaque(mix(grey, col, saturate(boost - vignette * reduction)));
     }
       break;
     case emboss: {
-      float2 delta = 1 / size;
-      col = (layer.sample( size * (uv - delta) ) * 3 - layer.sample(size * uv) - layer.sample(size * (uv+delta) )).rgb;
+      const float2 delta = 1 / size;
+      return opaque((layer.sample( size * (uv - delta) ) * 3 - layer.sample(size * uv) - layer.sample(size * (uv+delta) )).rgb);
     }
       break;
     default:
       break;
   }
-
-   return opaque( mix(col, ocol, uv.x > mouse.x ) * (abs(uv.x - mouse.x) > 2 / size.x) );
+  return 0;
  }
 
 // =================================================================
