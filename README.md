@@ -1,24 +1,22 @@
 #  SwiftUI Shaders
 
 - is there a way to redraw the snapshot when the parameters change?
-- is there a way to have the snapshot animate when hovering over it?
 
 - First time the camera is authorized, it fails to appear.  Restarting the app makes it work.  Parameterized > MonochromeFade
 
-- need to implement a way to pass the additional image to the view (as a parameter/option)
-
 - Use scrollPosition instead of ScrollReader
 
-** - Make UI to get background in arguments
 - Make UI to get Webcam in arguments
 
 - figure out a way to stack effects (i.e. pre-view effects and post-view effects for the metal views)
 
 - the still being displayed during a video pause is wrong -- but the video displayed when the pause resumes seems right.
 
-- color for debug doesn't match -- it used to.  So something has changed with the ColorSpace (again)
+- split filter93 into layer effects and distortion effects -- it is not an extra image argument.
 
-- alphax can't modify arguments.
+- possibly changing the info property in layers can resolve the scaling issue in layer effects?  and use it for colore effects?
+
+- background not getting reset as I move from shader to shaderx
 
 =================================================================
 

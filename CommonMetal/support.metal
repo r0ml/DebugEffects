@@ -24,6 +24,10 @@ using namespace metal;
 float2 textureSize(texture2d<float> t) {
   return float2(t.get_width(), t.get_height());
 }
+float2 textureSize(texture2d<half> t) {
+  return float2(t.get_width(), t.get_height());
+}
+
 
  fragment float4 passthruFragmentFn( VertexOut thisVertex [[stage_in]] ) {
   return thisVertex.color;

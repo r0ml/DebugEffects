@@ -11,20 +11,21 @@ import SwiftUI
   public let shaderType: ShaderType
   public let shaderFn : ShaderFunction
   public var background : BackgroundSpec?
+  public var imageArg : NSImage?
   
   public var mdcache : MetalDelegate<T.Args>?
 
-  
-  
-  public convenience init(_ n : String, _ t : ShaderType, background: String) {
-    self.init(n, t, background: BackgroundSpec(NSImage(named: background)!))
+  public convenience init(_ n : String, _ t : ShaderType, background: String, imageArg: String? = nil) {
+    self.init(n, t, background: BackgroundSpec(NSImage(named: background)!), imageArg: imageArg == nil ? nil : NSImage(named: imageArg!)! )
   }
   
-  public init(_ n : String, _ t : ShaderType, background: BackgroundSpec? = nil
+  public init(_ n : String, _ t : ShaderType, background: BackgroundSpec? = nil, imageArg: NSImage? = nil
   ) {
     name = n
     self.shaderType = t
     self.background = background
+    self.imageArg = imageArg
+    
     let co = MTLCompileOptions()
     co.libraryType = .dynamic
     co.libraries = []
@@ -54,6 +55,8 @@ import SwiftUI
       // to include the stored UserDefaults upon creation
       
       let n = name
+      
+      /*
       var bookmarkIsStale : Bool = false
       if let bmx = UserDefaults.standard.data(forKey: "background.\(n)") {
         let bm = bmx.dropFirst(2)
@@ -82,15 +85,38 @@ import SwiftUI
       }
       
 
+      if let bmx = UserDefaults.standard.data(forKey: "imageArg.\(n)") {
+        let bm = bmx.dropFirst(2)
+        if bmx[0] == 2 || bmx[0] == 3,
+           // 2.
+           let resolvedUrl = try? URL(resolvingBookmarkData: bm,
+                                      options: [.withSecurityScope
+                                                //, withoutUI
+                                               ],
+                                      relativeTo: nil,
+                                      bookmarkDataIsStale: &bookmarkIsStale),
+           !bookmarkIsStale {
+          if resolvedUrl.startAccessingSecurityScopedResource() {
+            // FIXME: need to also create Webcam or Video or Color
+            if bmx[0] == 2,
+               let ni = NSImage(contentsOf: resolvedUrl) {
+              imageArg = ni // BackgroundSpec(ni)
+            } else if bmx[0] == 3 {
+              let nv = VideoSupport(url: resolvedUrl)
+              background = BackgroundSpec(nv)
+            } else {
+              background = BackgroundSpec(NSColor.systemMint.cgColor)
+            }
+          }
+        }
+      }
 
 
 
 
       args.background = background
-      
-      
-      
-      
+      args.otherImage = imageArg
+      */
       
       
       
@@ -112,12 +138,15 @@ import SwiftUI
 //      print("background?")
     }
     
-//    try? await Task.sleep(for: .milliseconds(50))
-    let av = StitchWithArgs<T>(args: args, preview: true, name: name,
-                               shaderType: shaderType, shaderFn: shaderFn, controlState: ControlState() )
+    if args.otherImage == nil {
+      args.otherImage = imageArg
+    }
+    
+//    let av =
 
     return VStack {
-      av
+      StitchWithArgs(args: args, preview: true, name: name,
+                                 shaderType: shaderType, shaderFn: shaderFn, controlState: ControlState() )
       Text(name)
     }.frame(width: s.width, height: s.height)
     
@@ -126,7 +155,7 @@ import SwiftUI
 //      renderer.scale = 1 // displayScale
 //    return renderer.nsImage ?? NSImage()
   }
-
+   
   @MainActor public func teardown() {
     // FIXME: how do I do the teardown??
 //    (args.background as? VideoStream)?.stopVideo()

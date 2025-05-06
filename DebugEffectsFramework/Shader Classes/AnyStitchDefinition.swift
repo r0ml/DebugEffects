@@ -32,18 +32,3 @@ public struct DummyManifest : Manifest {
     registered = n
   }
 }
-
-extension AnyStitchDefinition {
-  
-/*  @MainActor public func previewFor() -> any View {
-    return VStack {
-      MyAsyncImage(closure:  {
-        let z = await self.getSnapshot(CGSize(width: 220, height: 150))
-          return z
-      })
-      Text(name)
-    }
-  }
- */
-  
-}

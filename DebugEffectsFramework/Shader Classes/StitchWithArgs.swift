@@ -10,11 +10,11 @@ class Location {
   var pt : CGPoint = CGPoint(x: 100, y: 75);
 }
 
-struct StitchWithArgs<T : ArgSetter > : View {
+struct StitchWithArgs<T : Instantiatable > : View {
 
   @Environment(\.colorScheme) var colorScheme : ColorScheme
 
-  var args : ArgProtocol<T.Args>
+  var args : ArgProtocol<T>
   @State var data : Data = Data()
   @State var argArgs : [Shader.Argument] = []
   var controlState : ControlState
@@ -27,7 +27,7 @@ struct StitchWithArgs<T : ArgSetter > : View {
   var shaderFn : ShaderFunction
   var shaderType : ShaderType
   
-  init(args : ArgProtocol<T.Args>, preview : Bool, name : String, // argSetter : T.Type,
+  init(args : ArgProtocol<T>, preview : Bool, name : String,
        shaderType : ShaderType, shaderFn: ShaderFunction,
        controlState : ControlState) {
     self.preview = preview
@@ -52,7 +52,7 @@ struct StitchWithArgs<T : ArgSetter > : View {
         
         AnyView(
           // FIXME: grab a frame from the video for this thumbnail
-          StillView(elapsedTime: 5, nn: args.background?.view ?? AnyView(Rectangle()) /* BaseView(image: (args.background as? NSImage) ) */, location: Location(),
+          StillView(elapsedTime: 5, nn: args.background?.view ?? AnyView(Rectangle()), location: Location(),
                     shaderType: shaderType, shaderFn: shaderFn, args: getArgs() )
           .frame(minHeight: 80)
           .background(Color.black)

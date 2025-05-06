@@ -30,6 +30,9 @@ using namespace metal;
 #include <metal_stdlib>
 // #include "constants.h"
 
+float2 textureSize(texture2d<float> t);
+float2 textureSize(texture2d<half> t);
+
 float2 worldCoordAdjusted(float2 position, float2 size);
 float2 worldCoord(float2 position, float2 size);
 float2 toWorld(float2 x);  // convert texture coordinates to world coordinates
