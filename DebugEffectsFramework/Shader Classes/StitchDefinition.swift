@@ -40,6 +40,11 @@ import SwiftUI
     registry[n] = self
   }
   
+/*  public func getArgs() -> ArgProtocol<T.Args> {
+    return ArgProtocol<T.Args>.init(name)
+  }
+  */
+  
   @MainActor public func getShaderView(debugFlag : Binding<Bool>) -> AnyView {
     return AnyView( ShaderView(shader: self, debugFlag: debugFlag) )
   }

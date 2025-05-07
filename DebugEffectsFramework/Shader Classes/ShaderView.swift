@@ -4,9 +4,27 @@
 import SwiftUI
 import UniformTypeIdentifiers
 
+public struct ShaderViewWrapper : View {
+  var shader : (any AnyStitchDefinition)?
+  @Binding var debugFlag : Bool
+
+  public init(shader: (any AnyStitchDefinition)?, debugFlag: Binding<Bool>) {
+    self.shader = shader
+    self._debugFlag = debugFlag
+  }
+  
+  public var body : some View {
+    if let shader {
+      return shader.getShaderView(debugFlag: $debugFlag)
+    } else {
+      return AnyView(Text("Nothing selected"))
+    }
+  }
+}
+
 public struct ShaderView<T : ArgSetter> : View, Sendable {
   var shader : StitchDefinition<T>
-  @State var args : ArgProtocol<T.Args>
+  var args : ArgProtocol<T.Args>
 
   @Binding var debugFlag : Bool
   @State var saveImage : Bool = false
@@ -61,6 +79,9 @@ public struct ShaderView<T : ArgSetter> : View, Sendable {
             }
           }
         }
+//        .onChange(of: shader.name, initial: true) {ov, nv in
+//          print(ov, nv)
+//        }
         .onChange(of: controlState.paused, initial: true) { ov, nv in
           if nv { // paused
               // FIXME: make startVideo / stopVideo methods on protocol Backgroundable

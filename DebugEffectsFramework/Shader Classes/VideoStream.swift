@@ -11,5 +11,6 @@ public protocol VideoStream : Equatable {
   @MainActor func stopVideo()
   @MainActor func startVideo()
   @MainActor func getAspectRatio() async -> CGFloat?
+  @MainActor var lastImage : CIImage? { get }
 }
 

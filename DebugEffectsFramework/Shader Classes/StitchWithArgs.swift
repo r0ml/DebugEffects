@@ -26,7 +26,7 @@ struct StitchWithArgs<T : Instantiatable > : View {
   
   var shaderFn : ShaderFunction
   var shaderType : ShaderType
-  
+   
   init(args : ArgProtocol<T>, preview : Bool, name : String,
        shaderType : ShaderType, shaderFn: ShaderFunction,
        controlState : ControlState) {
@@ -70,13 +70,26 @@ struct StitchWithArgs<T : Instantiatable > : View {
           var nn = args.background?.view ?? AnyView(Rectangle())
           
           TimelineView(  .animation(minimumInterval: 0.01, paused: controlState.paused && !controlState.singleStep)   ) {@MainActor context in
-            if let vv = args.background?.videoStream,
-               let xx = vv.readBufferAsImage( controlState.elapsedTime /*   now()  */ /* - controlState.deadTime */ /* t */ ) {
-              if let nnn = NSImage.init(ciImage: xx.oriented(.down)) {
-                let _ = nn = AnyView(Image.init(nsImage: nnn).resizable().scaledToFit())
+            // let _ = print("timeline")
+            if controlState.paused {
+              if let vv = args.background?.videoStream,
+                 let xx = vv.lastImage,
+                 let z = NSImage(ciImage: xx.oriented(.down) ) {
+                let _ = nn = AnyView(Image.init(nsImage: z).resizable().scaledToFit())
+              }
+            } else {
+              
+              if let vv = args.background?.videoStream,
+                 let xx = vv.readBufferAsImage( controlState.elapsedTime ) {
+               // let _ = print(controlState.elapsedTime)
+                
+                let z = NSImage.init(ciImage: xx.oriented(.down))
+                if let z {
+                  let _ = nn = AnyView(Image.init(nsImage: z).resizable().scaledToFit())
+                }
               }
             }
-            
+          
             StillView(elapsedTime: controlState.elapsedTime, nn: nn,
                       location: location,
                       shaderType: shaderType, shaderFn: shaderFn, args: getArgs())
@@ -89,6 +102,7 @@ struct StitchWithArgs<T : Instantiatable > : View {
           }.onChange(of: args.otherImage, initial: true) {
             argArgs = getArgs()
           }.onChange(of: args.background, initial: true) {
+            argArgs = getArgs()
             //      print("background changed")
           }
           

@@ -86,11 +86,12 @@ struct ControlView : View {
               Image(systemName: "pause.circle").resizable().scaledToFit()
                 .frame(width: buttonSize, height: buttonSize).onTapGesture {
                   controlState.paused.toggle()
+                 // print("paused")
                 }
               // This is `hidden` to keep things in the same place
               Image(systemName: "playpause" /* "chevron.right.to.line" */ /* "arrowkeys.right.fill" */).resizable().scaledToFit().hidden()
                 .frame(width: buttonSize, height: buttonSize).onTapGesture {
-                    print("single-step")
+                 //   print("single-step")
                 }
             }
           } else {

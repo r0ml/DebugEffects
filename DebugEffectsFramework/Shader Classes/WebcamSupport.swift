@@ -17,6 +17,8 @@ public class WebcamSupport : NSObject, VideoStream {
   private let name : String
   private var im : CIImage = CIImage()
 
+  public var lastImage : CIImage?
+
   public func getAspectRatio() async -> CGFloat? {
     return nil
   }

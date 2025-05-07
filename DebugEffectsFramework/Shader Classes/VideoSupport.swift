@@ -45,6 +45,8 @@ public class VideoSupport : VideoStream, Equatable, @unchecked Sendable {
   var observer : NSObject?
   var configured = false
   var loop : Bool = false
+  
+  public var lastImage : CIImage?
 
   deinit {
 //    print("deinit videostream")
@@ -156,6 +158,7 @@ public class VideoSupport : VideoStream, Equatable, @unchecked Sendable {
        // print(currentTime, ot)
       
       let ci = CIImage(cvPixelBuffer: pixelBuffer)
+      lastImage = ci
       return ci
     }
     return nil

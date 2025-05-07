@@ -10,13 +10,13 @@
 
 - figure out a way to stack effects (i.e. pre-view effects and post-view effects for the metal views)
 
-- the still being displayed during a video pause is wrong -- but the video displayed when the pause resumes seems right.
-
 - split filter93 into layer effects and distortion effects -- it is not an extra image argument.
 
 - possibly changing the info property in layers can resolve the scaling issue in layer effects?  and use it for colore effects?
 
-- background not getting reset as I move from shader to shaderx
+- resuming video flashes some other image before resuming (but not in debug mode) -- I think it is aspect ratio recalculation...
+
+- single stepping doesn't work'
 
 =================================================================
 

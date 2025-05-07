@@ -38,7 +38,7 @@ struct DebugEffectsMainView: View {
   }
   
   var body: some View {
-    let _ = Self._printChanges()
+    // let _ = Self._printChanges()
     
     return NavigationSplitView(columnVisibility: .constant(.all) ) {
       XSidebarView(selectedLib: $selectedLib, extensions: filteredShaders)
@@ -82,20 +82,20 @@ struct DebugEffectsMainView: View {
         AnyView( Text("Nothing selected") )
       }
     } detail: {
-       self.shaderView
+        ShaderViewWrapper(shader: getShader, debugFlag: $debugFlag)
     }
     .searchable(text: $searchText, prompt: "shader name")
     .navigationTitle("\(selectedLib ?? "") > \(selectedShader ?? "")" )
   }
   
-  @MainActor var shaderView : some View {
-    guard let selectedLib, let mm = shaders[selectedLib] else { return AnyView(Text("no library selected")) }
+  @MainActor var getShader : (any AnyStitchDefinition)? {
+    guard let selectedLib, let mm = shaders[selectedLib] else { return nil }
     guard let ext = mm.registered[selectedShader ?? "?"] else {
-      return AnyView(Text("nothing selected") )
+      return nil
     }
     
     // this needs to be a method call, because ext has been type-erased, and getting the shader view needs access
     // to the generic type.  The method call winds up being evaluated in the generic class
-    return ext.getShaderView(debugFlag: $debugFlag)
+    return ext
   }
 }
