@@ -181,7 +181,7 @@ import os
     
     if controlState?.paused == false || controlState?.singleStep == true  { //  isRunningx || isSteppingx {
 
-    controlState?.doStep()
+//    controlState?.doStep()
         ddraw( view:  view)
     }
   }

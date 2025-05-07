@@ -73,9 +73,19 @@ public struct ShaderView<T : ArgSetter> : View, Sendable {
           if nv {
             if let v = args.background?.videoStream,
                let vv = v as? VideoSupport {
-              Task {
-                await vv.seekForward(by: 1/10.0)
+              Task.detached {
+
+                let t = await controlState.elapsedTime
+//                let adj = min(1, t)
+                await vv.seek(to: t + 1)
+                await controlState.deadTime -= 1
+//                Task.detached {
+//                  try await Task.sleep(for: .seconds(0.1))
+                  await controlState.singleStep = false
+//                }
               }
+            } else {
+              controlState.deadTime = max(0, controlState.deadTime - 1)
             }
           }
         }

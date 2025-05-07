@@ -2,21 +2,13 @@
 
 - is there a way to redraw the snapshot when the parameters change?
 
-- First time the camera is authorized, it fails to appear.  Restarting the app makes it work.  Parameterized > MonochromeFade
-
 - Use scrollPosition instead of ScrollReader
-
-- Make UI to get Webcam in arguments
 
 - figure out a way to stack effects (i.e. pre-view effects and post-view effects for the metal views)
 
 - split filter93 into layer effects and distortion effects -- it is not an extra image argument.
 
 - possibly changing the info property in layers can resolve the scaling issue in layer effects?  and use it for colore effects?
-
-- resuming video flashes some other image before resuming (but not in debug mode) -- I think it is aspect ratio recalculation...
-
-- single stepping doesn't work'
 
 =================================================================
 

@@ -12,7 +12,9 @@ import Foundation
   var paused : Bool { get { pauseTime != nil }
     set {
       if newValue {
-        self.pauseTime = Date.now
+        if pauseTime == nil {
+          self.pauseTime = Date.now
+        }
       } else {
         self.deadTime += -pauseTime!.timeIntervalSinceNow
         self.pauseTime = nil
@@ -27,14 +29,6 @@ import Foundation
   var elapsedTime : TimeInterval {
     get {
       -startTime.timeIntervalSinceNow + (paused ? pauseTime!.timeIntervalSinceNow : 0 ) - deadTime
-    }
-  }
-  
-  func doStep() {
-    if singleStep {
-      paused = true
-      singleStep = false
-      deadTime -= 0.016
     }
   }
   
@@ -78,6 +72,8 @@ struct ControlView : View {
       Image(systemName: "backward.end").resizable().scaledToFit()
             .frame(width: buttonSize, height: buttonSize).onTapGesture {
               controlState.reset()
+              print("reset: \(controlState.elapsedTime)")
+              controlState.singleStep = true
           }
 
 //      if shader.isRunningx {
@@ -104,7 +100,7 @@ struct ControlView : View {
               Image(systemName: "chevron.right.to.line" /* "arrowkeys.right.fill" */ ).resizable().scaledToFit()
                 .frame(width: buttonSize, height: buttonSize).onTapGesture {
                   controlState.singleStep = true
-                  controlState.paused = false
+//                  controlState.paused = false
               }
               
             }

@@ -11,7 +11,7 @@ import Accelerate
 import SwiftUI
 
 
-public class VideoSupport : VideoStream, Equatable, @unchecked Sendable {
+public class VideoSupport : Equatable, @unchecked Sendable {
   nonisolated public func getAspectRatio() async -> CGFloat? {
     let v = self.video
     do {
@@ -58,7 +58,15 @@ public class VideoSupport : VideoStream, Equatable, @unchecked Sendable {
     let kx = CMTime(seconds: k + by, preferredTimescale: player.currentTime().timescale)
     await player.seek(to: kx)
   }
-  
+
+  public func seek(to: TimeInterval) async {
+//    let k = player.currentTime().seconds;
+    let ka = to.truncatingRemainder(dividingBy: player.currentItem!.duration.seconds)
+    let kx = CMTime(seconds: ka, preferredTimescale: player.currentItem!.currentTime().timescale)
+    print("seek to \(kx.seconds)")
+    await player.seek(to: kx, toleranceBefore: .zero, toleranceAfter: .zero)
+  }
+
   @MainActor public init( url u : URL ) {
     url = u
     video = AVURLAsset(url: u)
@@ -147,19 +155,29 @@ public class VideoSupport : VideoStream, Equatable, @unchecked Sendable {
 //    player.seek(to: currentTime) { n in print("done", n) }
 //    player.play()
 //    print("times:", currentTime.seconds, player.currentTime().seconds)
-    let oct = player.currentTime()
+  //  let octx = CMTime(seconds: player.currentTime().seconds.advanced(by: 0.1), preferredTimescale: player.currentTime().timescale)
+
+    //    let oct = player.currentTime()
+    let oct = currentTime
+
+    let _ = print("elapsedTime currentTime", oct.seconds, player.currentItem!.currentTime().seconds)
+
     if let pci = player.currentItem,
-       let pivo = pci.outputs.first as? AVPlayerItemVideoOutput,
-       
-        // let ct = pivo.itemTime(forHostTime: currentTime),
-        
-        pivo.hasNewPixelBuffer(forItemTime: oct),
-       let pixelBuffer = pivo.copyPixelBuffer(forItemTime: oct, itemTimeForDisplay: &ot)  {
-       // print(currentTime, ot)
+       let pivo = pci.outputs.first as? AVPlayerItemVideoOutput {
       
-      let ci = CIImage(cvPixelBuffer: pixelBuffer)
-      lastImage = ci
-      return ci
+      // let ct = pivo.itemTime(forHostTime: currentTime),
+      if
+        pivo.hasNewPixelBuffer(forItemTime: oct),
+        let pixelBuffer = pivo.copyPixelBuffer(forItemTime: oct, itemTimeForDisplay: &ot)  {
+        // print(currentTime, ot)
+        
+        print("did get pixelBuffer for \(oct.seconds)")
+        let ci = CIImage(cvPixelBuffer: pixelBuffer)
+        lastImage = ci
+        return ci
+      } else {
+        print("did not get pixelBuffer for \(oct.seconds)")
+      }
     }
     return nil
   }
@@ -218,7 +236,7 @@ public class VideoSupport : VideoStream, Equatable, @unchecked Sendable {
     return self.frameTexture
   }
 
-  public func readBufferAsImage(_ nVSync : TimeInterval) -> CIImage? {
+  @MainActor public func  readBufferAsImage(_ nVSync : TimeInterval) -> CIImage? {
     let nextVSync = nVSync
 
     if player.timeControlStatus == .waitingToPlayAtSpecifiedRate {
