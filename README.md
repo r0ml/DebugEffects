@@ -6,9 +6,17 @@
 
 - figure out a way to stack effects (i.e. pre-view effects and post-view effects for the metal views)
 
-- split filter93 into layer effects and distortion effects -- it is not an extra image argument.
+- must divide the size of the passed layer image by 2 for debug to match swiftui
 
-- possibly changing the info property in layers can resolve the scaling issue in layer effects?  and use it for colore effects?
+- implement selecting backgrounds from Photo Library
+
+- implement taking snapshots and exporting to file or Photo Library
+
+- implement recording shader video and exporting to file or Photo Library
+
+- handle dropping movie onto the arg image well
+
+- debug mode video plays jerkily (times not matching up)
 
 =================================================================
 

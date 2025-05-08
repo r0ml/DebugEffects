@@ -473,7 +473,7 @@ import os
         // FIXME: don't need both
         let ii = vv.readBufferAsImage( now() ),
         let sb = NSImage(ciImage: ii.oriented(.down)) {
-        let kbt = sb.createTextureWithBlackBorder(device)
+        let kbt = sb.createTextureWithBlackBorder(device, scaledSize: size)
         baseTexture = kbt
       }
       
@@ -484,13 +484,14 @@ import os
       if let bt = baseTexture {
         
       } else {
-        let kbt = sb.createTextureWithBlackBorder(device)
+        // FIXME: the texture should be scaled to the SwiftUI View size
+        let kbt = sb.createTextureWithBlackBorder(device, scaledSize: size)
         baseTexture = kbt
       }
     }
     
     if let sb = args.otherImage {
-      let ot = sb.createTextureWithBlackBorder(device)
+      let ot = sb.createTextureWithBlackBorder(device, scaledSize: sb.size)
       // let ot = sb.getTexture(textureLoader)
       otherTexture = ot
     }

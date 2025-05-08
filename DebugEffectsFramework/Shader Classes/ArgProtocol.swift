@@ -118,20 +118,23 @@ public struct JustImageArg : Equatable {
 public struct JustImage<T : Instantiatable> : ArgSetter {
   
   @State var hovering = false
-
   @Bindable public var args: ArgProtocol<T>
-  
+  var withOtherImage : Bool = false
+
   public init(args v : ArgProtocol<T>) {
     args = v
+    self.withOtherImage = v.otherImage != nil
   }
 
   public var body : some View {
     // FIXME: use a "empy image" image
     HStack {
-      Image(nsImage: args.otherImage ?? NSImage(named: "arid_mud")!)
-        .resizable().scaledToFit()
-        .frame(maxWidth: 100)
-        .onDrop(of: [.fileURL, .image, .video, .movie], isTargeted: $hovering, perform: doDrop )
+      if withOtherImage {
+        Image(nsImage: args.otherImage ?? NSImage(named: "arid_mud")!)
+          .resizable().scaledToFit()
+          .frame(maxWidth: 100)
+          .onDrop(of: [.fileURL, .image, .video, .movie], isTargeted: $hovering, perform: doDrop )
+      }
       BackgroundableView(args.name, args: $args.background)
     }
   }

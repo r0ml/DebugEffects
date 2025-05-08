@@ -22,7 +22,7 @@ import Foundation
     }
   }
   var pauseTime : Date? = nil
-  var deadTime : TimeInterval = 0
+  @ObservationIgnored var deadTime : TimeInterval = 0
   var startTime : Date = Date.now
   var singleStep : Bool = false
   
@@ -72,7 +72,7 @@ struct ControlView : View {
       Image(systemName: "backward.end").resizable().scaledToFit()
             .frame(width: buttonSize, height: buttonSize).onTapGesture {
               controlState.reset()
-              print("reset: \(controlState.elapsedTime)")
+         //     print("reset: \(controlState.elapsedTime)")
               controlState.singleStep = true
           }
 

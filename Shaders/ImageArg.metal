@@ -416,7 +416,7 @@ layerEffect(kaleidoscope03) {
 layerEffect(filter93) {
  
  enum Variant {
-    barrel, bloating, box, grayscalex, emboss
+    box, grayscalex, emboss
  };
 
  struct Args {
@@ -428,39 +428,6 @@ layerEffect(filter93) {
    const float2 uv = position / size;
 
   switch(args->variant) {
-    case barrel: {
-      const float2 distortion_center = float2(0.5,0.5);
-      
-      //K1 < 0 is pincushion distortion
-      //K1 >=0 is barrel distortion
-      const float k1 = 1.0 * sin(time*0.5);
-      const float k2 = 0.5;
-      
-      const float2 rx = uv - distortion_center;
-      const float rr = dot(rx,rx);
-      const float r2 = sqrt(rr) * (1.0 + k1*rr + k2*rr*rr);
-      const float theta = atan2(rx.x, rx.y);
-      const float2 distortion = float2(sin(theta), cos(theta)) * r2;
-      const float2 dest_uv = distortion + 0.5;
-      return layer.sample( size * dest_uv);
-    }
-      break;
-    case bloating:
-    {
-      const float maxPower = 1.5; //Change this to change the grade of bloating that is applied to the image.
-      const float2 bloatPos = 0; //The position at which the effect occurs
-      
-      const float n = smoothstep(0.,1.,abs(1.-mod(time/2.,2.)));
-      const float2 q = bloatPos+0.5;
-      const float l2 = length(uv-q);
-      const float2 p = uv - q;
-      
-      const float a1 = acos(clamp(dot(normalize(p),float2(1,0)),-1.0, 1.0)) * (p.y < 0 ? -1 : 1) * (length(p) != 0);
-      const float l = pow(l2, 1+n*(maxPower-1));
-      const float2 uv2 = l*float2(cos(a1),sin(a1))+q;
-      return layer.sample(size * uv2);
-    }
-      break;
     case box: {
       half3 col = 0;
       
@@ -486,6 +453,62 @@ layerEffect(filter93) {
     case emboss: {
       const float2 delta = 1 / size;
       return opaque((layer.sample( size * (uv - delta) ) * 3 - layer.sample(size * uv) - layer.sample(size * (uv+delta) )).rgb);
+    }
+      break;
+    default:
+      break;
+  }
+  return 0;
+ }
+
+// =================================================================
+
+distortionEffect(filter94) {
+ 
+ enum Variant {
+   barrel, bloating
+ };
+
+ struct Args {
+ char variant;
+ };
+
+  auto args = reinterpret_cast<const device Args *>(arg);
+  
+   const float2 uv = position / size;
+
+  switch(args->variant) {
+    case barrel: {
+      const float2 distortion_center = float2(0.5,0.5);
+      
+      //K1 < 0 is pincushion distortion
+      //K1 >=0 is barrel distortion
+      const float k1 = 1.0 * sin(time*0.5);
+      const float k2 = 0.5;
+      
+      const float2 rx = uv - distortion_center;
+      const float rr = dot(rx,rx);
+      const float r2 = sqrt(rr) * (1.0 + k1*rr + k2*rr*rr);
+      const float theta = atan2(rx.x, rx.y);
+      const float2 distortion = float2(sin(theta), cos(theta)) * r2;
+      const float2 dest_uv = distortion + 0.5;
+      return size * dest_uv;
+    }
+      break;
+    case bloating:
+    {
+      const float maxPower = 1.5; //Change this to change the grade of bloating that is applied to the image.
+      const float2 bloatPos = 0; //The position at which the effect occurs
+      
+      const float n = smoothstep(0.,1.,abs(1.-mod(time/2.,2.)));
+      const float2 q = bloatPos+0.5;
+      const float l2 = length(uv-q);
+      const float2 p = uv - q;
+      
+      const float a1 = acos(clamp(dot(normalize(p),float2(1,0)),-1.0, 1.0)) * (p.y < 0 ? -1 : 1) * (length(p) != 0);
+      const float l = pow(l2, 1+n*(maxPower-1));
+      const float2 uv2 = l*float2(cos(a1),sin(a1))+q;
+      return size * uv2;
     }
       break;
     default:

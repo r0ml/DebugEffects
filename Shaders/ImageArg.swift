@@ -20,7 +20,8 @@ public struct ImageArgManifest : Manifest {
     register(StitchDefinition<JustImage<EmptyStruct>>("cube92", .layer, background: "london_tower", imageArg: "london_wheel") )
     register(StitchDefinition<JustImage<EmptyStruct>>("swap", .layer, background: "london_tower", imageArg: "london_wheel") )
     register(StitchDefinition<Kaleidoscope03>("kaleidoscope03", .layer, background: "london_tower", imageArg: "london_wheel") )
-    register(StitchDefinition<Filter93>("filter93", .layer, background: "london_tower", imageArg: "london_wheel") )
+    register(StitchDefinition<Filter93>("filter93", .layer, background: "london_tower") )
+    register(StitchDefinition<Filter94>("filter94", .distort, background: "london_tower") )
   }
   
   
@@ -113,11 +114,37 @@ public struct ImageArgManifest : Manifest {
   
   struct Filter93 : ArgSetter {
     enum Variant : Int, CaseIterable, Identifiable {
-      case barrel = 0
-      case bloating
-      case box
+      case box = 0
       case grayscale
       case emboss
+      
+      var id : Int { rawValue }
+    }
+    
+    struct Args : Instantiatable {
+      var variant : Variant = .box
+    }
+    
+    @Bindable var args : ArgProtocol<Args>
+    
+    var body : some View {
+      VStack {
+        Picker("Variant", selection: $args.floatArgs.variant) {
+          ForEach(Variant.allCases, id: \.self) { variant in
+            Text("\(variant)").tag(variant)
+          }
+        }.pickerStyle(.segmented)
+        JustImage(args: args)
+      }
+    }
+  }
+  
+  // =========================
+
+  struct Filter94 : ArgSetter {
+    enum Variant : Int, CaseIterable, Identifiable {
+      case barrel = 0
+      case bloating
       
       var id : Int { rawValue }
     }

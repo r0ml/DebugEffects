@@ -130,7 +130,8 @@ import SwiftUI
       md.controlState = controlState
       mdcache = md
       md.beginShader()
-      background?.videoStream?.startVideo()
+      controlState.reset()
+      background?.videoStream?.startVideo(true)
       return md
     }
   }
