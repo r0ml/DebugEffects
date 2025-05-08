@@ -47,7 +47,7 @@ import os
   var frameComputeBuffer : MTLBuffer?
   var myDataBuffer : MTLBuffer?
   
-  var argBuffer : MTLBuffer
+  private var argBuffer : MTLBuffer
   
   var didBeginShader = false
   /// This is the CPU overlay on the initialization buffer
@@ -58,7 +58,7 @@ import os
   
   var args : ArgProtocol<T>
   
-  var controlState : ControlState?
+  private var controlState : ControlState
   
   public func setVideoRecorder(_ m : MetalVideoRecorder?) {
     videoRecorder = m
@@ -72,7 +72,8 @@ import os
 
   @MainActor public init(name: String,
                          type: ShaderType,
-                         args: ArgProtocol<T>) {
+                         args: ArgProtocol<T>,
+                         controlState: ControlState, ) {
     
     self.shader = GenericShader("\(name)_\(type.shaderSuffix)") // linkedFunctions: linkedFunctions)
                                                                 //    self.baseImage = baseImage
@@ -88,9 +89,9 @@ import os
     self.frameTimer = FrameTimer()
     self.locations = Locations()
     self.renderer = SCNRenderer(device: device)
-    //    self.ext = xi
-    
+
     self.shaderType = type
+    self.controlState = controlState
     
     super.init()
   }
@@ -100,11 +101,6 @@ import os
   // If I set a stop here, then the thumbnail preview works for snapshot (but not for animation?)
   @MainActor public func sampleAt(seconds: Double, size: CGSize) async -> NSImage {
     beginShader()
-
-    //    await times.setTime(seconds)
-    
-//    controlState?.wrappedValue.paused = false
-    
     guard size.width > 0 && size.height > 0 else { return NSImage() }
     return await draw(size: size, at: seconds)
   }
@@ -179,9 +175,7 @@ import os
       self.saveImage(view)
     }
     
-    if controlState?.paused == false || controlState?.singleStep == true  { //  isRunningx || isSteppingx {
-
-//    controlState?.doStep()
+    if !controlState.paused || controlState.singleStep  { //  isRunningx || isSteppingx {
         ddraw( view:  view)
     }
   }
@@ -469,10 +463,13 @@ import os
   @MainActor func setUpBaseTexture(_ mtl : MTLRenderPassDescriptor, size: CGSize) {
     
     if let vv = args.background?.videoStream {
-      if
-        // FIXME: don't need both
-        let ii = vv.readBufferAsImage( now() ),
-        let sb = NSImage(ciImage: ii.oriented(.down)) {
+      let ce = controlState.elapsedTime
+      if let sb = self.sortOutVideo() {
+      
+//      if
+//        // FIXME: don't need both
+//        let ii = vv.readBufferAsImage( ce ),
+//        let sb = NSImage(ciImage: ii.oriented(.down)) {
         let kbt = sb.createTextureWithBlackBorder(device, scaledSize: size)
         baseTexture = kbt
       }
@@ -496,7 +493,7 @@ import os
       otherTexture = ot
     }
   }
-  
+
   // The above ddraw takes a MTKView as an argument, and so it renders the shader into that view.
   // This ddraw does not take a MTKView as an argument because it will render offscreen.  So it needs to create
   // its own RenderPassDescriptor and colorAttachments to render into.
@@ -504,7 +501,37 @@ import os
   // separate initialization function, then used here.
   
   
-  
+  @MainActor func sortOutVideo() -> NSImage? {
+    guard let vv = args.background?.videoStream else { return nil }
+    var ce = controlState.elapsedTime
+    let drift = ce - vv.currentTime.seconds
+    if abs(drift) > 0.3 {
+//      print("drift is \(drift)")
+      controlState.deadTime += drift - 0.15
+      ce -= drift - 0.15
+    }
+    if controlState.paused && !controlState.singleStep {
+      if let xx = vv.lastImage,
+         let z = NSImage(ciImage: xx.oriented(.down) ) {
+        return z
+      }
+    } else {
+      
+//      let _ = print("elapsed time in timeline", controlState.elapsedTime)
+
+      if let xx = vv.readBufferAsImage( ce ),
+         let z = NSImage.init(ciImage: xx.oriented(.down)) {
+        return z
+      } else {
+        if let xx = vv.lastImage,
+           let z = NSImage(ciImage: xx.oriented(.down)) {
+          return z
+        }
+        //                let _ = print("keep the old one")
+      }
+    }
+    return nil
+  }
   
   
   
@@ -559,7 +586,7 @@ extension MetalDelegate {
       
   //    let tim = Float(self.lastTime )
       
-      let tim =  Float( controlState?.elapsedTime  ?? 0)
+      let tim =  Float( controlState.elapsedTime )
       uniform.pointee.time = tim
       
       uniform.pointee.sinTime = sin(tim)
@@ -632,6 +659,12 @@ extension MetalDelegate {
   func finishCommandEncoding(_ renderEncoder : MTLRenderCommandEncoder ) {
     renderEncoder.setRenderPipelineState(shader.pipelineState)
     renderEncoder.drawPrimitives(type: .triangleStrip, vertexStart: 0, vertexCount: 4, instanceCount: 1 )
+  }
+  
+  func setArgBuffer(_ v : any Instantiatable) {
+    withUnsafePointer(to: v) {
+      argBuffer.contents().copyMemory(from: $0, byteCount: MemoryLayout.size(ofValue: $0))
+    }
   }
   
 }

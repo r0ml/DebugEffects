@@ -126,8 +126,7 @@ import SwiftUI
       
       
       let md = MetalDelegate( name: name, type: shaderType, args: args
-                              )
-      md.controlState = controlState
+                              , controlState: controlState)
       mdcache = md
       md.beginShader()
       controlState.reset()

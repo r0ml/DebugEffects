@@ -247,15 +247,12 @@ public class VideoSupport : Equatable, @unchecked Sendable {
       return nil
     }
 
-    let cmt = CMTime(seconds: nextVSync, preferredTimescale: 240)
+    let oct = CMTime(seconds: nextVSync, preferredTimescale: 240)
+    //    let oct = player.currentTime()
 
-    
     var ot : CMTime = .zero
 
-    //    let oct = player.currentTime()
-    let oct = cmt
-
-    let _ = print("elapsedTime currentTime", oct.seconds, player.currentItem!.currentTime().seconds)
+//    let _ = print("elapsedTime currentTime", oct.seconds, player.currentItem!.currentTime().seconds)
 
     if let pci = player.currentItem,
        let pivo = pci.outputs.first as? AVPlayerItemVideoOutput {

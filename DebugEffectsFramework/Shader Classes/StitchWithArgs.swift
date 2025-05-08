@@ -111,7 +111,7 @@ struct StitchWithArgs<T : Instantiatable > : View {
     var ce = controlState.elapsedTime
     let drift = ce - vv.currentTime.seconds
     if drift > 0.3 {
-      print("drift is \(drift)")
+//      print("drift is \(drift)")
       controlState.deadTime += drift - 0.15
       ce -= drift - 0.15
     }
