@@ -29,9 +29,7 @@ struct MetalWithArgs<T : ArgSetter> : View {
 //      ControlView(controlState: $controlState)
     }
     .onChange(of: metalDelegate.args.floatArgs, initial: true) {
-      withUnsafePointer(to: metalDelegate.args.floatArgs) {
-        metalDelegate.argBuffer.contents().copyMemory(from: $0, byteCount: MemoryLayout.size(ofValue: metalDelegate.args.floatArgs))
-      }
+        metalDelegate.setArgBuffer(metalDelegate.args.floatArgs)
     }
     /*
     .onChange(of: args.otherImage, initial: true) {

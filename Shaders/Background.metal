@@ -67,31 +67,40 @@ colorEffect(colorCycle) {
 // =================================================================
 
 colorEffect(derivatives) {
-  const float2 b = position / size;
+  struct Args {
+    char variant;
+  };
+  
+  auto args = reinterpret_cast<device const Args *>(arg);
+  
   half3  col = currentColor.rgb;
   const float lum = dot(col, 0.333);
-  const half3 ocol = col;
   
-  if( b.x>0.5 ) {
-    // right side: changes in luminance
-    const float f = fwidth( lum );
-    col *= 1.5 * half3( saturate(1.0-8.0*f) );
-  } else {
-    // bottom left: emboss
-    float3  nor = normalize( float3( dfdx(lum), 64.0 / size.x, dfdy(lum) ) );
-    if( b.x<0.5 ) {
-      const float lig = 0.5 + dot(nor,float3(0.7,0.2,-0.7));
-      col = lig;
-    } else {
-      // top left: bump
+  switch (args->variant) {
+/*    case 0: {
+      float3  nor = normalize( float3( dfdx(lum), 64.0 / size.x, dfdy(lum) ) );
       const float lig = clamp( 0.5 + 1.5*dot(nor,float3(0.7,0.2,-0.7)), 0.0, 1.0 );
       col *= lig;
     }
+      break;
+ */
+    case 1: {
+      float3  nor = normalize( float3( dfdx(lum), 64.0 / size.x, dfdy(lum) ) );
+      const float lig = 0.5 + dot(nor,float3(0.7,0.2,-0.7));
+      col = lig;
+    }
+      break;
+    case 0: {
+      const float f = fwidth( lum );
+      col *= 1.5 * half3( saturate(1.0-8.0*f) );
+    }
+      break;
   }
+
   
-  col *= smoothstep( 0.003, 0.004, abs(b.x-0.5) );
-  col *= 1.0 - (1.0-smoothstep( 0.007, 0.008, abs(b.x-0.5) ))*(1.0-smoothstep(0.49,0.5,b.x));
-  col = mix( col, ocol, pow( 0.5 + 0.5*sin(time), 4.0 ) );
+//  col *= smoothstep( 0.003, 0.004, abs(b.x-0.5) );
+//  col *= 1.0 - (1.0-smoothstep( 0.007, 0.008, abs(b.x-0.5) ))*(1.0-smoothstep(0.49,0.5,b.x));
+//  col = mix( col, ocol, pow( 0.5 + 0.5*sin(time), 4.0 ) );
   
   return opaque( col);
 }

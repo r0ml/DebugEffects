@@ -4,6 +4,24 @@
 import SwiftUI
 import UniformTypeIdentifiers
 
+public struct ShaderViewWrapper : View {
+  var shader : (any AnyStitchDefinition)?
+  @Binding var debugFlag : Bool
+
+  public init(shader: (any AnyStitchDefinition)?, debugFlag: Binding<Bool>) {
+    self.shader = shader
+    self._debugFlag = debugFlag
+  }
+  
+  public var body : some View {
+    if let shader {
+      return shader.getShaderView(debugFlag: $debugFlag)
+    } else {
+      return AnyView(Text("Nothing selected"))
+    }
+  }
+}
+
 public struct ShaderView<T : ArgSetter> : View, Sendable {
   var shader : StitchDefinition<T>
   @State var args : ArgProtocol<T.Args>
@@ -37,6 +55,8 @@ public struct ShaderView<T : ArgSetter> : View, Sendable {
     DragGesture()
   }
   
+  let singleStepIncrement = 0.1
+  
   public var body : some View {
     //    let _ = Self._printChanges()
     VStack {
@@ -53,20 +73,32 @@ public struct ShaderView<T : ArgSetter> : View, Sendable {
       ControlView(controlState: $controlState)
         .onChange(of: controlState.singleStep) { ov, nv in
           if nv {
-            if let v = args.background?.videoStream,
-               let vv = v as? VideoSupport {
-              Task {
-                await vv.seekForward(by: 1/10.0)
+            if let vv = args.background?.videoStream {
+              Task.detached {
+
+                let t = await controlState.elapsedTime
+//                let adj = min(1, t)
+                await vv.seek(to: t + singleStepIncrement)
+                await controlState.deadTime -= singleStepIncrement
+//                Task.detached {
+//                  try await Task.sleep(for: .seconds(0.1))
+                  await controlState.singleStep = false
+//                }
               }
+            } else {
+              controlState.deadTime = max(0, controlState.deadTime - 1)
             }
           }
         }
+//        .onChange(of: shader.name, initial: true) {ov, nv in
+//          print(ov, nv)
+//        }
         .onChange(of: controlState.paused, initial: true) { ov, nv in
           if nv { // paused
               // FIXME: make startVideo / stopVideo methods on protocol Backgroundable
               args.background?.videoStream?.stopVideo()
           } else {
-              args.background?.videoStream?.startVideo()
+              args.background?.videoStream?.startVideo(false)
           }
         
     }
@@ -78,7 +110,7 @@ public struct ShaderView<T : ArgSetter> : View, Sendable {
     .toolbar {
       HStack {
         Text("Debug")
-        Toggle("Debeug", isOn: $debugFlag).toggleStyle(.switch)
+        Toggle("Debug", isOn: $debugFlag).toggleStyle(.switch)
       }
     }
     .onChange(of: args.floatArgs, initial: false) {
@@ -87,20 +119,20 @@ public struct ShaderView<T : ArgSetter> : View, Sendable {
     
     // FIXME: video gets started twice -- once for change of background, once for change of shader name
     .onChange(of: args.background, initial: false) {
+      controlState.reset()
       if let c = args.background?.bgColor {
         print("color changed -- save defaults")
         //          UserDefaults.standard.set(args.background as! CGColor, forKey: "background.\(shader.name)" )
       } else if let i = args.background?.nsImage {
 //        print("image changed -- save defaults")
       } else if let v = args.background?.videoStream {
-        if let vv = v as? VideoSupport {
-          vv.startVideo()
-        }
+          v.startVideo(true)
       }
     }
     
     .onChange(of: shader.name) {
-      args.background?.videoStream?.startVideo()
+      controlState.reset()
+      args.background?.videoStream?.startVideo(true)
     }
   }
 }

@@ -26,7 +26,7 @@ struct StitchWithArgs<T : Instantiatable > : View {
   
   var shaderFn : ShaderFunction
   var shaderType : ShaderType
-  
+
   init(args : ArgProtocol<T>, preview : Bool, name : String,
        shaderType : ShaderType, shaderFn: ShaderFunction,
        controlState : ControlState) {
@@ -46,7 +46,7 @@ struct StitchWithArgs<T : Instantiatable > : View {
   // fragment shader "scaffold" and passes in a parameter to have it invoke the
   // colorFn or distortFn or layerFn
     public var body: some View {
-    //  let _ = Self._printChanges()
+     // let _ = Self._printChanges()
       
       if preview {
         
@@ -67,28 +67,29 @@ struct StitchWithArgs<T : Instantiatable > : View {
               self.location.pt = $0.location
             })
           
-          var nn = args.background?.view ?? AnyView(Rectangle())
+          var nn = args.background?.view ?? AnyView(Rectangle().foregroundStyle(Color.blue))
           
           TimelineView(  .animation(minimumInterval: 0.01, paused: controlState.paused && !controlState.singleStep)   ) {@MainActor context in
-            if let vv = args.background?.videoStream,
-               let xx = vv.readBufferAsImage( controlState.elapsedTime /*   now()  */ /* - controlState.deadTime */ /* t */ ) {
-              if let nnn = NSImage.init(ciImage: xx.oriented(.down)) {
-                let _ = nn = AnyView(Image.init(nsImage: nnn).resizable().scaledToFit())
-              }
+            // let _ = print("timeline")
+
+            let ce = controlState.elapsedTime
+            if let nnn = self.sortOutVideo() {
+              let _ = nn = nnn
             }
-            
-            StillView(elapsedTime: controlState.elapsedTime, nn: nn,
+          
+            StillView(elapsedTime: ce, nn: nn,
                       location: location,
                       shaderType: shaderType, shaderFn: shaderFn, args: getArgs())
             .background(Color.black)
             .gesture(myGesture)
             
-            let _ = controlState.doStep()
+//            let _ = controlState.doStep()
           }.onChange(of: args.floatArgs, initial: true) {
             argArgs = getArgs()
           }.onChange(of: args.otherImage, initial: true) {
             argArgs = getArgs()
           }.onChange(of: args.background, initial: true) {
+            argArgs = getArgs()
             //      print("background changed")
           }
           
@@ -104,5 +105,38 @@ struct StitchWithArgs<T : Instantiatable > : View {
 
       }
     }
+  
+  func sortOutVideo() -> AnyView? {
+    guard let vv = args.background?.videoStream else { return nil }
+    var ce = controlState.elapsedTime
+    let drift = ce - vv.currentTime.seconds
+    if drift > 0.3 {
+//      print("drift is \(drift)")
+      controlState.deadTime += drift - 0.15
+      ce -= drift - 0.15
+    }
+    if controlState.paused && !controlState.singleStep {
+      if let xx = vv.lastImage,
+         let z = NSImage(ciImage: xx.oriented(.down) ) {
+        return AnyView(Image.init(nsImage: z).resizable().scaledToFit())
+      }
+    } else {
+      
+//      let _ = print("elapsed time in timeline", controlState.elapsedTime)
+
+      if let xx = vv.readBufferAsImage( ce ),
+         let z = NSImage.init(ciImage: xx.oriented(.down)) {
+        
+        return AnyView(Image.init(nsImage: z).resizable().scaledToFit())
+      } else {
+        if let xx = vv.lastImage,
+           let z = NSImage(ciImage: xx.oriented(.down)) {
+          return AnyView(Image.init(nsImage: z).resizable().scaledToFit())
+        }
+        //                let _ = print("keep the old one")
+      }
+    }
+    return nil
+  }
   
 }

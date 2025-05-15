@@ -12,6 +12,7 @@ public protocol AnyStitchDefinition : Identifiable {
   @MainActor func getShaderView(debugFlag: Binding<Bool>) -> AnyView
   @MainActor func getSnapshot(_ s : CGSize) -> any View
   @MainActor func teardown()
+//  func getArgs() -> any Instantiatable
 }
 
 public protocol Manifest {

@@ -12,7 +12,9 @@ import Foundation
   var paused : Bool { get { pauseTime != nil }
     set {
       if newValue {
-        self.pauseTime = Date.now
+        if pauseTime == nil {
+          self.pauseTime = Date.now
+        }
       } else {
         self.deadTime += -pauseTime!.timeIntervalSinceNow
         self.pauseTime = nil
@@ -20,21 +22,13 @@ import Foundation
     }
   }
   var pauseTime : Date? = nil
-  var deadTime : TimeInterval = 0
+  @ObservationIgnored var deadTime : TimeInterval = 0
   var startTime : Date = Date.now
   var singleStep : Bool = false
   
   var elapsedTime : TimeInterval {
     get {
       -startTime.timeIntervalSinceNow + (paused ? pauseTime!.timeIntervalSinceNow : 0 ) - deadTime
-    }
-  }
-  
-  func doStep() {
-    if singleStep {
-      paused = true
-      singleStep = false
-      deadTime -= 0.016
     }
   }
   
@@ -78,6 +72,8 @@ struct ControlView : View {
       Image(systemName: "backward.end").resizable().scaledToFit()
             .frame(width: buttonSize, height: buttonSize).onTapGesture {
               controlState.reset()
+         //     print("reset: \(controlState.elapsedTime)")
+              controlState.singleStep = true
           }
 
 //      if shader.isRunningx {
@@ -86,11 +82,12 @@ struct ControlView : View {
               Image(systemName: "pause.circle").resizable().scaledToFit()
                 .frame(width: buttonSize, height: buttonSize).onTapGesture {
                   controlState.paused.toggle()
+                 // print("paused")
                 }
               // This is `hidden` to keep things in the same place
               Image(systemName: "playpause" /* "chevron.right.to.line" */ /* "arrowkeys.right.fill" */).resizable().scaledToFit().hidden()
                 .frame(width: buttonSize, height: buttonSize).onTapGesture {
-                    print("single-step")
+                 //   print("single-step")
                 }
             }
           } else {
@@ -103,7 +100,7 @@ struct ControlView : View {
               Image(systemName: "chevron.right.to.line" /* "arrowkeys.right.fill" */ ).resizable().scaledToFit()
                 .frame(width: buttonSize, height: buttonSize).onTapGesture {
                   controlState.singleStep = true
-                  controlState.paused = false
+//                  controlState.paused = false
               }
               
             }

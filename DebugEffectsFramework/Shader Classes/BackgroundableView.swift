@@ -27,17 +27,13 @@ public struct BackgroundableView : View {
       bg = AnyView( Image(nsImage: i).resizable().scaledToFit() )
     } else if let v = background.wrappedValue?.videoStream {
       //        Task { @MainActor in
-      if let vv = v as? VideoSupport {
         bg = AnyView( MyAsyncImage {
-          let cg = await vv.getThumbnail()
+          let cg = await v.getThumbnail()
           let ns = NSImage(cgImage: cg, size: CGSize(width: cg.width, height: cg.height))
           return ns
         } ) // Image(decorative: bgx, scale: 1)
 //          .resizable().scaledToFit())
         //        }
-      } else if let w = v as? WebcamSupport {
-        bg = AnyView(Image(nsImage: NSImage(named: "still_life")!))
-      }
     } else if let c = background.wrappedValue?.bgColor {
       if let g = background.wrappedValue?.view {
         bg = AnyView( g.frame(maxHeight: 66)  )

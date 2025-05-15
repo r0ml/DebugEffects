@@ -40,6 +40,11 @@ import SwiftUI
     registry[n] = self
   }
   
+/*  public func getArgs() -> ArgProtocol<T.Args> {
+    return ArgProtocol<T.Args>.init(name)
+  }
+  */
+  
   @MainActor public func getShaderView(debugFlag : Binding<Bool>) -> AnyView {
     return AnyView( ShaderView(shader: self, debugFlag: debugFlag) )
   }
@@ -121,11 +126,11 @@ import SwiftUI
       
       
       let md = MetalDelegate( name: name, type: shaderType, args: args
-                              )
-      md.controlState = controlState
+                              , controlState: controlState)
       mdcache = md
       md.beginShader()
-      background?.videoStream?.startVideo()
+      controlState.reset()
+      background?.videoStream?.startVideo(true)
       return md
     }
   }

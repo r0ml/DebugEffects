@@ -301,7 +301,7 @@ fragment FragmentOutput a##_DistortFragment(VertexOut vertexOut [[stage_in]], \
   const float2 mouse = myData.mouse; \
 \
   float2 res = a##_DistortPrivate(vertexOut.where.xy, scn_frame.time, size, mouse, otherTexture, arg, 90909 ); \
-  float4 colx = currentTexture.read(uint2(mod(res, size))); \
+  float4 colx = currentTexture.read(uint2(clamp(res, 0, size+2))); \
   return float4(float3((half3(colx.rgb))), colx.w); \
 } \
 \

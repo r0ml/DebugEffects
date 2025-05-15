@@ -50,16 +50,24 @@ extension NSImage : @unchecked Sendable {
     return nil
   }
   
-  func createTextureWithBlackBorder(_ device: MTLDevice) -> MTLTexture? {
-      let originalSize = self.size
-      let newSize = NSSize(width: originalSize.width + 2, height: originalSize.height + 2)
+  func createTextureWithBlackBorder(_ device: MTLDevice, scaledSize scaledSizex : CGSize) -> MTLTexture? {
+    
+    let scaledSize = CGSize(width: scaledSizex.width, height: scaledSizex.height)
+
+      let newSize = NSSize(width: scaledSize.width + 2, height: scaledSize.height + 2)
       
+    
+    
+    
       // 1. Create a bitmap context
       guard let colorSpace = CGColorSpace(name: CGColorSpace.sRGB) else {
           print("Failed to create color space")
           return nil
       }
       
+    
+    
+    
       let bytesPerPixel = 4
       let bitsPerComponent = 8
       let bytesPerRow = Int(newSize.width) * bytesPerPixel
@@ -83,14 +91,30 @@ extension NSImage : @unchecked Sendable {
       context.setFillColor(NSColor.black.cgColor)
       context.fill(CGRect(origin: .zero, size: CGSize(width: newSize.width, height: newSize.height)))
       
+    let rect = CGRect(origin: CGPoint(x: 1, y: 1), size: scaledSize)
+    
+    let graphicsContext = NSGraphicsContext(cgContext: context, flipped: false)
+    NSGraphicsContext.saveGraphicsState()
+    NSGraphicsContext.current = graphicsContext
+
+    self.draw(in: rect, from: CGRect(origin: .zero, size: self.size), operation: .sourceOver, fraction: 1.0)
+
+    
+    NSGraphicsContext.restoreGraphicsState()
+
+    guard let _ = context.makeImage() else {
+      return nil
+    }
+    
+    /*
       // 3. Draw the original image centered (offset by 1 pixel)
       guard let cgImage = cgImage(forProposedRect: nil, context: nil, hints: nil) else {
           print("Failed to get CGImage from NSImage")
           return nil
       }
-      
       context.draw(cgImage, in: CGRect(x: 1, y: 1, width: originalSize.width, height: originalSize.height))
-      
+*/
+
       // 4. Create a Metal texture
       let descriptor = MTLTextureDescriptor.texture2DDescriptor(
           pixelFormat: .rgba8Unorm,
@@ -104,8 +128,9 @@ extension NSImage : @unchecked Sendable {
           print("Failed to create MTLTexture")
           return nil
       }
-      
-      // 5. Upload pixel data to Metal
+
+    
+        // 5. Upload pixel data to Metal
       rawData.withUnsafeBytes { bufferPointer in
           texture.replace(
               region: MTLRegionMake2D(0, 0, Int(newSize.width), Int(newSize.height)),
@@ -116,6 +141,7 @@ extension NSImage : @unchecked Sendable {
       }
       
       return texture
+
   }
 
   

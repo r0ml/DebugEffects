@@ -11,7 +11,7 @@ import Accelerate
 import SwiftUI
 
 
-public class VideoSupport : VideoStream, Equatable, @unchecked Sendable {
+public class VideoSupport : Equatable, @unchecked Sendable {
   nonisolated public func getAspectRatio() async -> CGFloat? {
     let v = self.video
     do {
@@ -45,18 +45,30 @@ public class VideoSupport : VideoStream, Equatable, @unchecked Sendable {
   var observer : NSObject?
   var configured = false
   var loop : Bool = false
+  
+  public var lastImage : CIImage?
 
   deinit {
 //    print("deinit videostream")
     player.pause()
   }
 
+  public var currentTime : CMTime { return player.currentTime() }
+  
   public func seekForward(by: TimeInterval) async {
     let k = player.currentTime().seconds;
     let kx = CMTime(seconds: k + by, preferredTimescale: player.currentTime().timescale)
     await player.seek(to: kx)
   }
-  
+
+  public func seek(to: TimeInterval) async {
+//    let k = player.currentTime().seconds;
+    let ka = to.truncatingRemainder(dividingBy: player.currentItem!.duration.seconds)
+    let kx = CMTime(seconds: ka, preferredTimescale: player.currentItem!.currentTime().timescale)
+   // print("seek to \(kx.seconds)")
+    await player.seek(to: kx, toleranceBefore: .zero, toleranceAfter: .zero)
+  }
+
   @MainActor public init( url u : URL ) {
     url = u
     video = AVURLAsset(url: u)
@@ -104,16 +116,18 @@ public class VideoSupport : VideoStream, Equatable, @unchecked Sendable {
     }
   }
 
-  public func startVideo() {
+  public func startVideo(_ rewind : Bool) {
 //    print("start video")
     let v = self.video
     
     if configured {
+      if rewind { player.seek(to: .zero) }
       player.play()
     } else {
       Task {
         try? await self.configure(v)
         configured = true
+        if rewind { await player.seek(to: .zero) }
         player.play()
       }
     }
@@ -139,28 +153,35 @@ public class VideoSupport : VideoStream, Equatable, @unchecked Sendable {
     self.region = MTLRegionMake2D(0, 0, mtd.width, mtd.height)
   }
 
+  /*
   @MainActor private func getPixelsAsImage(_ currentTime : CMTime) -> CIImage? {
     var ot : CMTime = .zero
-//    player.pause()
-//    player.seek(to: currentTime) { n in print("done", n) }
-//    player.play()
-//    print("times:", currentTime.seconds, player.currentTime().seconds)
-    let oct = player.currentTime()
+
+    //    let oct = player.currentTime()
+    let oct = currentTime
+
+    let _ = print("elapsedTime currentTime", oct.seconds, player.currentItem!.currentTime().seconds)
+
     if let pci = player.currentItem,
-       let pivo = pci.outputs.first as? AVPlayerItemVideoOutput,
-       
-        // let ct = pivo.itemTime(forHostTime: currentTime),
-        
-        pivo.hasNewPixelBuffer(forItemTime: oct),
-       let pixelBuffer = pivo.copyPixelBuffer(forItemTime: oct, itemTimeForDisplay: &ot)  {
-       // print(currentTime, ot)
+       let pivo = pci.outputs.first as? AVPlayerItemVideoOutput {
       
-      let ci = CIImage(cvPixelBuffer: pixelBuffer)
-      return ci
+      // let ct = pivo.itemTime(forHostTime: currentTime),
+      if
+        pivo.hasNewPixelBuffer(forItemTime: oct),
+        let pixelBuffer = pivo.copyPixelBuffer(forItemTime: oct, itemTimeForDisplay: &ot)  {
+    //    print("did get pixelBuffer for \(oct.seconds)")
+        let ci = CIImage(cvPixelBuffer: pixelBuffer)
+        lastImage = ci
+        return ci
+      } else {
+     //   print("did not get pixelBuffer for \(oct.seconds)")
+      }
     }
     return nil
   }
-
+*/
+  
+  
   @MainActor func getPixelsAsTexture(_ currentTime : CMTime) -> MTLTexture? {
     let pivo = player.currentItem!.outputs[0] as! AVPlayerItemVideoOutput
     // let currentTime = pivo.itemTime(forHostTime: nextVSync)
@@ -215,7 +236,7 @@ public class VideoSupport : VideoStream, Equatable, @unchecked Sendable {
     return self.frameTexture
   }
 
-  public func readBufferAsImage(_ nVSync : TimeInterval) -> CIImage? {
+  @MainActor public func  readBufferAsImage(_ nVSync : TimeInterval) -> CIImage? {
     let nextVSync = nVSync
 
     if player.timeControlStatus == .waitingToPlayAtSpecifiedRate {
@@ -226,26 +247,30 @@ public class VideoSupport : VideoStream, Equatable, @unchecked Sendable {
       return nil
     }
 
-    //    if let pci = player.currentItem {
-    //     let pcio = pci.outputs.first {
-    //     let pivo = pcio as! AVPlayerItemVideoOutput
+    let oct = CMTime(seconds: nextVSync, preferredTimescale: 240)
+    //    let oct = player.currentTime()
 
-    //   let currentTime = pivo.itemTime(forHostTime: nextVSync)
+    var ot : CMTime = .zero
 
-    //    player.seek(to: currentTime)
+//    let _ = print("elapsedTime currentTime", oct.seconds, player.currentItem!.currentTime().seconds)
 
-//    print("nextVSync \(nextVSync)")
-    let cmt = CMTime(seconds: nextVSync, preferredTimescale: 240)
-//    print("cmt \(cmt)")
-    if let tx = getPixelsAsImage( cmt /* currentTime */ ) {
-      //    self.myTexture = tx
- //     print("got texture")
-      return tx
-    } else {
-//      print("nil")
-      return nil
+    if let pci = player.currentItem,
+       let pivo = pci.outputs.first as? AVPlayerItemVideoOutput {
+      
+      // let ct = pivo.itemTime(forHostTime: currentTime),
+      if
+        pivo.hasNewPixelBuffer(forItemTime: oct),
+        let pixelBuffer = pivo.copyPixelBuffer(forItemTime: oct, itemTimeForDisplay: &ot)  {
+    //    print("did get pixelBuffer for \(oct.seconds)")
+        let ci = CIImage(cvPixelBuffer: pixelBuffer)
+        lastImage = ci
+        return ci
+      } else {
+        return lastImage
+     //   print("did not get pixelBuffer for \(oct.seconds)")
+      }
     }
-
+    return nil
   }
 
 

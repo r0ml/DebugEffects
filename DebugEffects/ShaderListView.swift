@@ -28,7 +28,7 @@ struct ShaderListView : View {
           // ForEach( theManifest!.values /* k[g]! */.sorted { $0.name < $1.name }, id: \.id) {
           let v = theManifest![name]!
           
-          AnyView(v.getSnapshot(CGSize(width: 220, height: 150))) //   previewFor())
+          AnyView(v.getSnapshot(CGSize(width: 220, height: 150))) 
             .background( v.id == selectedShader ? (colorScheme == .dark ? Color.init(hue: 124.0 / 360, saturation: 0.77, brightness: 0.4) : Color.init(hue: 124.0 / 360, saturation: 0.77, brightness: 0.8) ) : Color.clear)
             .padding(2)
             .frame(minWidth: 100, maxWidth: 400)

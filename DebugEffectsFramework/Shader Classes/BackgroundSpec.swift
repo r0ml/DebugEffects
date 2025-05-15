@@ -6,7 +6,7 @@ import SwiftUI
 public class BackgroundSpec : Equatable {
   private var color : CGColor?
   private var image : NSImage?
-  private var video : (any VideoStream)?
+  private var video : VideoSupport?
   
   public init(_ c : CGColor) {
     color = c
@@ -16,7 +16,7 @@ public class BackgroundSpec : Equatable {
     image = i
   }
   
-  public init(_ v : any VideoStream) {
+  public init(_ v : VideoSupport) {
     video = v
   }
   
@@ -29,10 +29,7 @@ public class BackgroundSpec : Equatable {
     }
     
     if lhs.video != nil && rhs.video != nil {
-      if lhs.video is WebcamSupport && rhs.video is WebcamSupport {
-        return true
-      }
-      return lhs.video as? VideoSupport == rhs.video as? VideoSupport
+      return lhs.video == rhs.video
     }
     return false
   }
@@ -44,7 +41,7 @@ public class BackgroundSpec : Equatable {
       return AnyView( Image(nsImage: i).resizable().scaledToFit().edgesIgnoringSafeArea(.all) )
     } else if let v = video {
       return AnyView( MyAsyncImage {
-        let im = await (v as! VideoSupport).getThumbnail()
+        let im = await v.getThumbnail()
         let imx = NSImage(cgImage: im, size: NSSize(width: im.width, height: im.height))
         return imx }
     )
@@ -54,7 +51,7 @@ public class BackgroundSpec : Equatable {
     }
   }
   
-  public var videoStream : (any VideoStream)? { video }
+  public var videoStream : VideoSupport? { video }
   public var bgColor : CGColor? { color }
   public var nsImage : NSImage? { image }
 }
