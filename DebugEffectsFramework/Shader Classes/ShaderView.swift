@@ -110,7 +110,7 @@ public struct ShaderView<T : ArgSetter> : View, Sendable {
     .toolbar {
       HStack {
         Text("Debug")
-        Toggle("Debeug", isOn: $debugFlag).toggleStyle(.switch)
+        Toggle("Debug", isOn: $debugFlag).toggleStyle(.switch)
       }
     }
     .onChange(of: args.floatArgs, initial: false) {
