@@ -68,6 +68,7 @@
 		E75DA2142DA2F01C007ECFE6 /* SUIS-Generators.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = "SUIS-Generators.xcodeproj"; sourceTree = "<group>"; };
 		E75DA24C2DA2F01C007ECFE6 /* SUIS-Parameterized.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = "SUIS-Parameterized.xcodeproj"; sourceTree = "<group>"; };
 		E75DA2AA2DA2F01C007ECFE6 /* SUIS-Shapes3D.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = "SUIS-Shapes3D.xcodeproj"; sourceTree = "<group>"; };
+		E769B3052E451E55009BDFAF /* Package.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Package.swift; sourceTree = "<group>"; };
 		E79F18642DCD59BA00BCE663 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		E79F18672DCD629100BCE663 /* MetalKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalKit.framework; path = System/Library/Frameworks/MetalKit.framework; sourceTree = SDKROOT; };
 		E79F186A2DCD630C00BCE663 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
@@ -110,9 +111,9 @@
 			path = CommonMetal;
 			sourceTree = "<group>";
 		};
-		E7E57C2E2DA2DE6A006F463E /* DebugEffectsFramework */ = {
+		E7E57C2E2DA2DE6A006F463E /* Sources */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = DebugEffectsFramework;
+			path = Sources;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -395,14 +396,15 @@
 		E7E57AFA2DA2D94C006F463E = {
 			isa = PBXGroup;
 			children = (
+				E769B3052E451E55009BDFAF /* Package.swift */,
 				E74949742DA5A35100A1A333 /* TODO.md */,
 				E79F18642DCD59BA00BCE663 /* README.md */,
 				E7A0A0322DA6E37200F550C7 /* Resources */,
 				E7E57BBB2DA2DD6F006F463E /* CommonMetal */,
 				E7E57B052DA2D94C006F463E /* DebugEffects */,
-				E7E57C2E2DA2DE6A006F463E /* DebugEffectsFramework */,
-				E7E57B042DA2D94C006F463E /* Products */,
+				E7E57C2E2DA2DE6A006F463E /* Sources */,
 				E744519A2DC2DCB100E4C63C /* Shaders */,
+				E7E57B042DA2D94C006F463E /* Products */,
 				E79F18662DCD629100BCE663 /* Frameworks */,
 			);
 			sourceTree = "<group>";
@@ -519,7 +521,7 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				E7E57C2E2DA2DE6A006F463E /* DebugEffectsFramework */,
+				E7E57C2E2DA2DE6A006F463E /* Sources */,
 			);
 			name = DebugEffectsFramework;
 			packageProductDependencies = (

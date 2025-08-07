@@ -1,26 +1,16 @@
 // Copyright (c) 1868 Charles Babbage
 // Modernized by Robert "r0ml" Lefkowitz <code@liberally.net> in 2025
 
-import DebugEffectsFramework
-
-
-struct DebugEffectsMainView: View {
+public struct DebugEffectsMainView: View {
   @State var selectedLib : String? = UserDefaults.standard.string(forKey: "selectedLib")
   @State var selectedShader : String? = UserDefaults.standard.string(forKey: "selectedShader")
   @State var rescroll : Int = 0
   @State var debugFlag : Bool = false
   
   @FocusState var listFocus : Bool
-  
-  var shaders: [String : Manifest ] = [
-    "Simple" : SimpleManifest(),
-    "Background" : BackgroundManifest(),
-    "SimpleLayers" : SimpleLayersManifest(),
-    "SimpleDistortion" : SimpleDistortionManifest(),
-    "SimpleArgs" : SimpleArgsManifest(),
-    "ImageArg" : ImageArgManifest(),
-  ]
-  
+
+  var shaders : [String:Manifest]
+
   @AppStorage("searchText") var searchText : String = ""
   
   var filteredShaders : [String : Manifest ] {
@@ -36,8 +26,12 @@ struct DebugEffectsMainView: View {
     }
     return res
   }
-  
-  var body: some View {
+
+  public init(_ m : [String:Manifest]) {
+    shaders = m
+  }
+
+  public var body: some View {
     // let _ = Self._printChanges()
     
     return NavigationSplitView(columnVisibility: .constant(.all) ) {
