@@ -48,9 +48,14 @@ func parseArgs(_ argv: [String]) -> Args {
 func defaultSearchRoots(env: [String:String]) -> [String] {
     var roots: [String] = []
     if let proj = env["PROJECT_DIR"] { roots.append(proj) }
-    if let dd = env["DERIVED_DATA_DIR"] {
-        roots.append((dd as NSString).appendingPathComponent("SourcePackages/checkouts"))
+    if let dd = env["BUILD_DIR"] {
+        roots.append((dd as NSString).appendingPathComponent("../../SourcePackages/checkouts/DebugEffects"))
     }
+
+  for i in roots {
+    print("root: \(i)")
+  }
+
     return roots
 }
 
@@ -88,6 +93,8 @@ struct MetalMergeTool {
     }
 
     static func runMain() throws {
+      print("run main, run main run main")
+
         var args = parseArgs(CommandLine.arguments)
         let env = ProcessInfo.processInfo.environment
 
@@ -98,6 +105,11 @@ struct MetalMergeTool {
         }
 
         let discovered = collectMetalFiles(from: args.searchRoots, ignoring: args.ignoreDirs)
+
+      for i in discovered {
+        print("discovered: \(i)")
+      }
+      
         var metalFiles = Array(Set(args.inputs + discovered)).sorted()
 
         if metalFiles.isEmpty {
@@ -113,8 +125,8 @@ struct MetalMergeTool {
         func xcrunTool(_ name: String) throws -> String {
             var a = ["-f", name]
           // FIXME: put me back
-            if let s = sdkName, !s.isEmpty { a = ["-sdk", s] + a }
-          
+          //  if let s = sdkName, !s.isEmpty { a = ["-sdk", s] + a }
+
             return try run("/usr/bin/xcrun", a).split(separator: "\n").first.map(String.init) ?? name
         }
 
@@ -125,6 +137,21 @@ struct MetalMergeTool {
       print("metal \(metal), metallib \(metallib), metalar \(metalar)")
 
         var airs: [String] = []
+
+     for (k,v) in env.sorted(by: { $0.key < $1.key }) {
+        print("\(k)=\(v)")
+      }
+
+      
+      var incdirs : [String] = []
+      if let dd = env["MTL_HEADER_SEARCH_PATHS"] {
+        for d in dd.split(separator: ":") {
+          incdirs.append(dd) // (dd as NSString).appendingPathComponent("SourcePackages/checkouts/DebugEffects/Includes"))
+        }
+      }
+
+      print("incdir \(incdirs)")
+
         for src in metalFiles {
             let base = ((src as NSString).lastPathComponent as NSString).deletingPathExtension
             let air = (workDir as NSString).appendingPathComponent("\(base).air")
@@ -132,6 +159,9 @@ struct MetalMergeTool {
             if let m = args.minMac { mArgs += ["-mmacosx-version-min=\(m)"] }
             if let i = args.minIOS { mArgs += ["-miphoneos-version-min=\(i)"] }
             for inc in args.includeDirs { mArgs += ["-I", inc] }
+
+          // FIXME: kludge?
+          for inc in incdirs { mArgs += ["-I", inc] }
 
           print("run /usr/bin/env \(([metal] + mArgs).joined(separator: " "))")
 
@@ -143,14 +173,22 @@ struct MetalMergeTool {
         }
 
       print("oof")
+      print("airs.count \(airs.count)")
 
-      
         if airs.count == 1 {
             _ = try run("/usr/bin/env", [metallib, airs[0], "-o", args.output])
         } else {
             let archive = (workDir as NSString).appendingPathComponent("merged.air")
+
+          print("run \(metalar) rc \(archive) \(airs.joined(separator: " "))")
+
             _ = try run("/usr/bin/env", [metalar, "rc", archive] + airs)
+
+          print("run \(metallib) \(archive) -o \(args.output)")
+          
             _ = try run("/usr/bin/env", [metallib, archive, "-o", args.output])
+
+
         }
 
         fputs("Merged metallib → \(args.output)\n", stderr)
