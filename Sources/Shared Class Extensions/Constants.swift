@@ -17,4 +17,5 @@ public let theOtherPixelFormat = MTLPixelFormat.bgra8Unorm
 public let multisampleCount = 1
 
 @MainActor public let device = MTLCreateSystemDefaultDevice()!
-@MainActor public let metalLibrary = device.makeDefaultLibrary()!
+let metalURL = Bundle.main.url(forResource: "Merged", withExtension: "metallib")!
+@MainActor public let metalLibrary = try! device.makeLibrary(URL:metalURL)

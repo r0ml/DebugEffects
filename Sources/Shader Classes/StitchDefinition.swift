@@ -33,8 +33,8 @@ import SwiftUI
     co.preprocessorMacros = [:]
     co.installName = nil
     
-    let l = ShaderLibrary.default
-    
+    let l = ShaderLibrary.init(url: metalURL)
+
     self.shaderFn = l[dynamicMember: n]
     
     registry[n] = self
