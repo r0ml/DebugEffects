@@ -25,10 +25,27 @@ let package = Package(
   name: "DebugEffectsSupport",
   platforms: [.macOS(.v15)],
   products: [
-    .library(name: "DebugEffectsSupport", targets: ["DebugEffectsSupport"])],
+    .plugin(name: "MetalBuildPlugin", targets: ["MetalBuildPlugin"]),
+    .library(name: "DebugEffectsSupport", targets: ["DebugEffectsSupport"]),
+     ],
   dependencies: [],
   targets: [
     .target(name: "DebugEffectsSupport",
-           publicHeadersPath: "Includes"),
+            path: "Sources",
+            swiftSettings: [
+              .unsafeFlags(["-target", "arm64-apple-macos15.0"])
+            ],
+
+           ),
+    .executableTarget(
+        name: "MetalMergeTool",
+        path: "Plugins/MetalMergeTool"
+    ),
+    .plugin(
+        name: "MetalBuildPlugin",
+        capability: .buildTool(),
+        dependencies: [.target(name: "MetalMergeTool")],
+        path: "Plugins/MetalBuildPlugin"
+    ),
   ]
 )

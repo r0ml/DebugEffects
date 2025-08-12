@@ -29,13 +29,22 @@ extension Shader.Argument {
   }
 }
 
+#if arch(arm64)
+  #else
+// WARNING: this totally doesn't work, but it will compile -- and without it, it won't compile for x86
+// I can't prevent SPM from compiling dependencies for x86 -- so this will compile the x86 code -- but
+// any calling app should be arm64 only.
+  public typealias Float16 = Float
+  #endif
 
 public struct ArgColor : Equatable, Sendable {
-  public var red : Float16 = 0
+
+  public var  red : Float16 = 0
   public var green : Float16 = 0
   public var blue : Float16 = 0
   public var alpha : Float16 = 1
-  
+
+
   public static func == (lhs: ArgColor, rhs: ArgColor) -> Bool {
     return lhs.red == rhs.red &&
     lhs.green == rhs.green &&
@@ -50,7 +59,6 @@ public struct ArgColor : Equatable, Sendable {
     self.alpha = alpha
   }
 }
-
 
 public extension Binding {
 

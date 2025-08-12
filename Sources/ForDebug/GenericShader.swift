@@ -13,8 +13,6 @@ let perNodeDataId = 1
 // Separating the variables into those that will be constant for the life of the object,
 // and those which will be modified during the running of the shader.
 
-@MainActor var lib = MTLCreateSystemDefaultDevice()!.makeDefaultLibrary()!
-
 public struct GenericShader : @unchecked Sendable {
   
   var metadata : MTLRenderPipelineReflection!
@@ -51,8 +49,8 @@ public struct GenericShader : @unchecked Sendable {
   @MainActor public init(_ s : String) {
     
     name = s
-    vertexProgram = lib.makeFunction(name: "flatVertexFn")!
-    fragmentProgram = lib.makeFunction(name: s ) ?? (device.makeDefaultLibrary()!.makeFunction(name: "passthruFragmentFn")!)
+    vertexProgram = metalLibrary.makeFunction(name: "flatVertexFn")!
+    fragmentProgram = metalLibrary.makeFunction(name: s ) ?? metalLibrary.makeFunction(name: "passthruFragmentFn")!
   }
   
   func loadAction(_ : Int) -> MTLLoadAction {
