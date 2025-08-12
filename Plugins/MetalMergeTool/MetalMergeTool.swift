@@ -45,20 +45,6 @@ func parseArgs(_ argv: [String]) -> Args {
     return a
 }
 
-func defaultSearchRoots(env: [String:String]) -> [String] {
-    var roots: [String] = []
-    if let proj = env["PROJECT_DIR"] { roots.append(proj) }
-    if let dd = env["BUILD_DIR"] {
-        roots.append((dd as NSString).appendingPathComponent("../../SourcePackages/checkouts/DebugEffects"))
-    }
-
-  for i in roots {
-    print("root: \(i)")
-  }
-
-    return roots
-}
-
 func collectMetalFiles(from roots: [String], ignoring ignore: Set<String>) -> [String] {
     let fm = FileManager.default
     var results: [String] = []
@@ -98,7 +84,6 @@ struct MetalMergeTool {
         var args = parseArgs(CommandLine.arguments)
         let env = ProcessInfo.processInfo.environment
 
-        if args.searchRoots.isEmpty { args.searchRoots = defaultSearchRoots(env: env) }
         if args.ignoreDirs.isEmpty { args.ignoreDirs = [".git", "build", ".build", "Products", "Intermediates.noindex"] }
         guard !args.output.isEmpty else {
             throw NSError(domain: "MetalMergeTool", code: 1, userInfo: [NSLocalizedDescriptionKey: "Missing --output"])
@@ -138,20 +123,6 @@ struct MetalMergeTool {
 
         var airs: [String] = []
 
-     for (k,v) in env.sorted(by: { $0.key < $1.key }) {
-        print("\(k)=\(v)")
-      }
-
-      
-      var incdirs : [String] = []
-      if let dd = env["MTL_HEADER_SEARCH_PATHS"] {
-        for d in dd.split(separator: ":") {
-          incdirs.append(dd) // (dd as NSString).appendingPathComponent("SourcePackages/checkouts/DebugEffects/Includes"))
-        }
-      }
-
-      print("incdir \(incdirs)")
-
         for src in metalFiles {
             let base = ((src as NSString).lastPathComponent as NSString).deletingPathExtension
             let air = (workDir as NSString).appendingPathComponent("\(base).air")
@@ -159,9 +130,6 @@ struct MetalMergeTool {
             if let m = args.minMac { mArgs += ["-mmacosx-version-min=\(m)"] }
             if let i = args.minIOS { mArgs += ["-miphoneos-version-min=\(i)"] }
             for inc in args.includeDirs { mArgs += ["-I", inc] }
-
-          // FIXME: kludge?
-          for inc in incdirs { mArgs += ["-I", inc] }
 
           print("run /usr/bin/env \(([metal] + mArgs).joined(separator: " "))")
 

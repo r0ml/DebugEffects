@@ -32,7 +32,10 @@ let package = Package(
   targets: [
     .target(name: "DebugEffectsSupport",
             path: "Sources",
-           publicHeadersPath: "Includes",
+            swiftSettings: [
+              .unsafeFlags(["-target", "arm64-apple-macos15.0"])
+            ],
+
            ),
     .executableTarget(
         name: "MetalMergeTool",
