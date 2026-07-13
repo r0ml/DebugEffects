@@ -2,6 +2,7 @@
 // Modernized by Robert "r0ml" Lefkowitz <code@liberally.net> in 2025
 
 import SwiftUI
+import DebugEffectsFramework
 
 @main
 struct SwiftUIMetalApp: App {

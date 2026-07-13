@@ -34,7 +34,7 @@ public struct BackgroundableView : View {
         } ) // Image(decorative: bgx, scale: 1)
 //          .resizable().scaledToFit())
         //        }
-    } else if let c = background.wrappedValue?.bgColor {
+    } else if let _ = background.wrappedValue?.bgColor {
       if let g = background.wrappedValue?.view {
         bg = AnyView( g.frame(maxHeight: 66)  )
       }

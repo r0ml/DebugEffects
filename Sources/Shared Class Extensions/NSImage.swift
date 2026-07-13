@@ -8,7 +8,7 @@ import os
 import SwiftUI
 
 
-extension NSImage : @unchecked Sendable {
+extension NSImage {
 
   var cgImage: CGImage {
     get {

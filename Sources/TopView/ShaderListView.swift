@@ -1,7 +1,7 @@
 // Copyright (c) 1868 Charles Babbage
 // Modernized by Robert "r0ml" Lefkowitz <code@liberally.net> in 2025
 
-extension String : Identifiable {
+extension String : @retroactive Identifiable {
   public var id : String { self }
 }
 
@@ -58,7 +58,7 @@ struct ShaderListView : View {
           } else {
             if let se = selectedShader {
               Task {
-                try await Task.sleep(for: .milliseconds(20) )
+                try? await Task.sleep(for: .milliseconds(20) )
                 //            await MainActor.run {
                 withAnimation(.easeInOut(duration: 60)) { // <-- Not working (changes nothing)
                   sv.scrollTo(se, anchor: .center)

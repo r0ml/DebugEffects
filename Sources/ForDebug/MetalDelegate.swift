@@ -1,7 +1,7 @@
 // Copyright (c) 1868 Charles Babbage
 // Modernized by Robert "r0ml" Lefkowitz <code@liberally.net> in 2025
 
-import SwiftUI
+@preconcurrency import SwiftUI
 import SceneKit
 import MetalKit
 import SpriteKit
@@ -462,8 +462,8 @@ import os
   
   @MainActor func setUpBaseTexture(_ mtl : MTLRenderPassDescriptor, size: CGSize) {
     
-    if let vv = args.background?.videoStream {
-      let ce = controlState.elapsedTime
+    if let _ /* vv */ = args.background?.videoStream {
+ //     let ce = controlState.elapsedTime
       if let sb = self.sortOutVideo() {
       
 //      if
@@ -478,8 +478,8 @@ import os
     } else if let sb = args.background?.nsImage {
       
       
-      if let bt = baseTexture {
-        
+      if let _ = baseTexture {
+
       } else {
         // FIXME: the texture should be scaled to the SwiftUI View size
         let kbt = sb.createTextureWithBlackBorder(device, scaledSize: size)

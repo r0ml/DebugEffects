@@ -95,7 +95,7 @@ struct MetalMergeTool {
         print("discovered: \(i)")
       }
       
-        var metalFiles = Array(Set(args.inputs + discovered)).sorted()
+        let metalFiles = Array(Set(args.inputs + discovered)).sorted()
 
         if metalFiles.isEmpty {
             try Data().write(to: URL(fileURLWithPath: args.output))
@@ -106,9 +106,9 @@ struct MetalMergeTool {
         let workDir = (args.output as NSString).deletingLastPathComponent
         try? FileManager.default.createDirectory(atPath: workDir, withIntermediateDirectories: true)
 
-        let sdkName = (env["SDKROOT"] as NSString?)?.lastPathComponent
+        let _ /* sdkName */ = (env["SDKROOT"] as NSString?)?.lastPathComponent
         func xcrunTool(_ name: String) throws -> String {
-            var a = ["-f", name]
+            let a = ["-f", name]
           // FIXME: put me back
           //  if let s = sdkName, !s.isEmpty { a = ["-sdk", s] + a }
 

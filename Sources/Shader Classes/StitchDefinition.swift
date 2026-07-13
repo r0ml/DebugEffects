@@ -59,7 +59,7 @@ import SwiftUI
       // this might be the right place, assuming that the StitchDefinition can be modified
       // to include the stored UserDefaults upon creation
       
-      let n = name
+      // let n = name
       
       /*
       var bookmarkIsStale : Bool = false

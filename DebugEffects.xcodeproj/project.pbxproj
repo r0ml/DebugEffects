@@ -91,11 +91,6 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		E744519A2DC2DCB100E4C63C /* Shaders */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = Shaders;
-			sourceTree = "<group>";
-		};
 		E7A0A0322DA6E37200F550C7 /* Resources */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = Resources;
@@ -104,11 +99,6 @@
 		E7E57B052DA2D94C006F463E /* DebugEffects */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = DebugEffects;
-			sourceTree = "<group>";
-		};
-		E7E57BBB2DA2DD6F006F463E /* CommonMetal */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = CommonMetal;
 			sourceTree = "<group>";
 		};
 		E7E57C2E2DA2DE6A006F463E /* Sources */ = {
@@ -400,10 +390,8 @@
 				E74949742DA5A35100A1A333 /* TODO.md */,
 				E79F18642DCD59BA00BCE663 /* README.md */,
 				E7A0A0322DA6E37200F550C7 /* Resources */,
-				E7E57BBB2DA2DD6F006F463E /* CommonMetal */,
 				E7E57B052DA2D94C006F463E /* DebugEffects */,
 				E7E57C2E2DA2DE6A006F463E /* Sources */,
-				E744519A2DC2DCB100E4C63C /* Shaders */,
 				E7E57B042DA2D94C006F463E /* Products */,
 				E79F18662DCD629100BCE663 /* Frameworks */,
 			);
@@ -495,10 +483,8 @@
 				E7E57C412DA2DE6A006F463E /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				E744519A2DC2DCB100E4C63C /* Shaders */,
 				E7A0A0322DA6E37200F550C7 /* Resources */,
 				E7E57B052DA2D94C006F463E /* DebugEffects */,
-				E7E57BBB2DA2DD6F006F463E /* CommonMetal */,
 			);
 			name = DebugEffects;
 			packageProductDependencies = (

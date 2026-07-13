@@ -120,10 +120,10 @@ public struct ShaderView<T : ArgSetter> : View, Sendable {
     // FIXME: video gets started twice -- once for change of background, once for change of shader name
     .onChange(of: args.background, initial: false) {
       controlState.reset()
-      if let c = args.background?.bgColor {
+      if let _ = args.background?.bgColor {
         print("color changed -- save defaults")
         //          UserDefaults.standard.set(args.background as! CGColor, forKey: "background.\(shader.name)" )
-      } else if let i = args.background?.nsImage {
+      } else if let _ = args.background?.nsImage {
 //        print("image changed -- save defaults")
       } else if let v = args.background?.videoStream {
           v.startVideo(true)
