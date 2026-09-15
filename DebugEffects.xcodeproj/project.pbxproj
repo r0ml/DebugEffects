@@ -394,6 +394,7 @@
 				E7E57C2E2DA2DE6A006F463E /* Sources */,
 				E7E57B042DA2D94C006F463E /* Products */,
 				E79F18662DCD629100BCE663 /* Frameworks */,
+				E7F6C7D330585C4400BA4058 /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
@@ -453,6 +454,55 @@
 			children = (
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		E7F6C7D330585C4400BA4058 /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+				E73FA0C22DA2EF3700E0DC2F /* SUIS-Shapes3D.xcodeproj */,
+				E7E3135A2DA2EFC2004B7DAE /* SUIS-Generators.xcodeproj */,
+				E7323DCC2DA2EE0800945733 /* SUIS-Filters.xcodeproj */,
+				E7439B1D2DA2EF6700B668F2 /* SUIS-Generators.xcodeproj */,
+				E7E581D02DA2ED6A006F463E /* SUIS-Filters.xcodeproj */,
+				E7323D2C2DA2EE0800945733 /* SUIS-Deferred1.xcodeproj */,
+				E75DA2142DA2F01C007ECFE6 /* SUIS-Generators.xcodeproj */,
+				E7323EA72DA2EE0800945733 /* SUIS-Shapes3D.xcodeproj */,
+				E7E5824A2DA2ED6A006F463E /* SUIS-Deferred2.xcodeproj */,
+				E73F9F752DA2EF3700E0DC2F /* SUIS-Deferred2.xcodeproj */,
+				E7439A972DA2EF6700B668F2 /* SUIS-Deferred3.xcodeproj */,
+				E7323E492DA2EE0800945733 /* SUIS-Parameterized.xcodeproj */,
+				E7E312752DA2EFC2004B7DAE /* SUIS-Deferred1.xcodeproj */,
+				E75DA24C2DA2F01C007ECFE6 /* SUIS-Parameterized.xcodeproj */,
+				E7439BB32DA2EF6700B668F2 /* SUIS-Shapes3D.xcodeproj */,
+				E7E5827B2DA2ED6A006F463E /* SUIS-Deferred1.xcodeproj */,
+				E75DA1CF2DA2F01C007ECFE6 /* SUIS-Filters.xcodeproj */,
+				E7439AD82DA2EF6700B668F2 /* SUIS-Filters.xcodeproj */,
+				E7E313F02DA2EFC2004B7DAE /* SUIS-Shapes3D.xcodeproj */,
+				E7323D5A2DA2EE0800945733 /* SUIS-Deferred2.xcodeproj */,
+				E7E312D42DA2EFC2004B7DAE /* SUIS-Deferred3.xcodeproj */,
+				E73FA0642DA2EF3700E0DC2F /* SUIS-Parameterized.xcodeproj */,
+				E75DA18E2DA2F01C007ECFE6 /* SUIS-Deferred3.xcodeproj */,
+				E7E313922DA2EFC2004B7DAE /* SUIS-Parameterized.xcodeproj */,
+				E7E582AF2DA2ED6A006F463E /* SUIS-Parameterized.xcodeproj */,
+				E75DA2AA2DA2F01C007ECFE6 /* SUIS-Shapes3D.xcodeproj */,
+				E75DA15D2DA2F01C007ECFE6 /* SUIS-Deferred2.xcodeproj */,
+				E7439A382DA2EF6700B668F2 /* SUIS-Deferred1.xcodeproj */,
+				E73F9FE72DA2EF3700E0DC2F /* SUIS-Filters.xcodeproj */,
+				E7E582E62DA2ED6A006F463E /* SUIS-Deferred3.xcodeproj */,
+				E75DA12F2DA2F01C007ECFE6 /* SUIS-Deferred1.xcodeproj */,
+				E73F9FA62DA2EF3700E0DC2F /* SUIS-Deferred3.xcodeproj */,
+				E73FA02C2DA2EF3700E0DC2F /* SUIS-Generators.xcodeproj */,
+				E7E313152DA2EFC2004B7DAE /* SUIS-Filters.xcodeproj */,
+				E7439B552DA2EF6700B668F2 /* SUIS-Parameterized.xcodeproj */,
+				E7E581582DA2ED6A006F463E /* SUIS-Shapes3D.xcodeproj */,
+				E7323D8B2DA2EE0800945733 /* SUIS-Deferred3.xcodeproj */,
+				E7E312A32DA2EFC2004B7DAE /* SUIS-Deferred2.xcodeproj */,
+				E7439A662DA2EF6700B668F2 /* SUIS-Deferred2.xcodeproj */,
+				E73F9F472DA2EF3700E0DC2F /* SUIS-Deferred1.xcodeproj */,
+				E7E582162DA2ED6A006F463E /* SUIS-Generators.xcodeproj */,
+				E7323E112DA2EE0800945733 /* SUIS-Generators.xcodeproj */,
+			);
+			name = "Recovered References";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -901,6 +951,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
@@ -941,6 +992,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
